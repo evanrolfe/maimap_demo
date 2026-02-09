@@ -1,0 +1,538 @@
+{
+    "id": 17,
+    "name": "service-subscription",
+    "git_repo_url": "/home/evan/Code/rinder/services/subscription",
+    "entrypoint_path": "cmd/main.go",
+    "entrypoint_function": "main",
+    "git_org_url": "github.com/rinder",
+    "git_commit": null,
+    "created_at": "2026-01-30T09:38:59.919701614Z",
+    "updated_at": "2026-01-30T09:39:02.267044298Z",
+    "status": "analyzing-completed",
+    "handlers": [
+        {
+            "id": 233,
+            "type": "http",
+            "method": "ANY",
+            "path": "/health",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "healthCheck",
+            "source_function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:26:19",
+            "function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:40:19",
+            "outputs": [
+                {
+                    "id": 1420,
+                    "handler_id": 233,
+                    "type": "http_response",
+                    "label": "HTTP 200 JSON response",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:40:19",
+                    "function_name": "healthCheck",
+                    "description": "Sends an HTTP 200 response to the client with Content-Type: application/json and body '{\"status\":\"healthy\",\"service\":\"subscription\"}'.",
+                    "created_at": "2026-01-30T09:39:53.196034554Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T09:39:41.810061505Z",
+            "updated_at": null
+        },
+        {
+            "id": 234,
+            "type": "http",
+            "method": "GET",
+            "path": "/api/v1/plans",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "listPlans",
+            "source_function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:26:19",
+            "function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:46:19",
+            "outputs": [
+                {
+                    "id": 1424,
+                    "handler_id": 234,
+                    "type": "http_response",
+                    "label": "HTTP 200 OK response with list of plans",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:46:19",
+                    "function_name": "listPlans",
+                    "description": "When the request method is GET, the handler returns an HTTP 200 response containing the static list of subscription plans produced by subscriptionService.GetPlans() (the plans are written to the response by response.OK).",
+                    "created_at": "2026-01-30T09:40:13.346414152Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1425,
+                    "handler_id": 234,
+                    "type": "http_response",
+                    "label": "HTTP error response (method not allowed)",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:46:19",
+                    "function_name": "listPlans",
+                    "description": "When the request method is not GET, the handler returns an error response indicating the method is not allowed (via response.Error and methodNotAllowedError).",
+                    "created_at": "2026-01-30T09:40:13.363435463Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T09:39:41.827191902Z",
+            "updated_at": null
+        },
+        {
+            "id": 235,
+            "type": "http",
+            "method": "GET",
+            "path": "/api/v1/plans/",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "planByID",
+            "source_function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:26:19",
+            "function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:56:19",
+            "outputs": [
+                {
+                    "id": 1423,
+                    "handler_id": 235,
+                    "type": "http_response",
+                    "label": "HTTP 200 JSON response with plan details",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:56:19",
+                    "function_name": "planByID",
+                    "description": "When a plan with the requested ID exists, the handler sets Content-Type: application/json, writes HTTP 200 status, and writes the JSON-encoded plan details (the byte slice returned by subscriptionService.GetPlanDetails) to the client.",
+                    "created_at": "2026-01-30T09:40:05.224626597Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1421,
+                    "handler_id": 235,
+                    "type": "http_response",
+                    "label": "HTTP 405 Method Not Allowed response",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:56:19",
+                    "function_name": "planByID",
+                    "description": "If the incoming request method is not GET, the handler returns a method-not-allowed error response to the client via response.Error (i.e. an HTTP error response is written and the request handling terminates).",
+                    "created_at": "2026-01-30T09:40:05.209602307Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1422,
+                    "handler_id": 235,
+                    "type": "http_response",
+                    "label": "HTTP error response for plan not found (e.g. 404)",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:56:19",
+                    "function_name": "planByID",
+                    "description": "If subscriptionService.GetPlanDetails(planID) returns a not-found error, the handler calls response.Error to send an error response to the client (an HTTP error response indicating the plan was not found).",
+                    "created_at": "2026-01-30T09:40:05.221137363Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T09:39:41.829653823Z",
+            "updated_at": null
+        },
+        {
+            "id": 238,
+            "type": "http",
+            "method": "GET",
+            "path": "/api/v1/subscriptions/me",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "mySubscription",
+            "source_function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:26:19",
+            "function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:108:19",
+            "outputs": [
+                {
+                    "id": 1428,
+                    "handler_id": 238,
+                    "type": "database",
+                    "label": "SELECT id, user_id, plan, status, payment_provider, external_id, current_period_start, current_period_end, cancelled_at, created_at, updated_at FROM subscriptions WHERE user_id = $1",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/repository/subscription_repository.go:105:34",
+                    "function_name": "GetByUserID",
+                    "description": "On a GET request with X-User-ID present, the repository executes a QueryRowContext against the database to select the subscription row for the given user_id. This query is performed irrespective of whether the row exists; QueryRowContext may return sql.ErrNoRows (mapped to a NotFound error) or another error (mapped to an internal error).",
+                    "created_at": "2026-01-30T09:40:17.855122541Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1429,
+                    "handler_id": 238,
+                    "type": "http_response",
+                    "label": "HTTP 200 response with subscription payload",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:108:19",
+                    "function_name": "mySubscription",
+                    "description": "If the database query successfully returns a subscription row, the handler responds to the client with an OK response containing the subscription object (response.OK called with the subscription). This is the successful GET response path.",
+                    "created_at": "2026-01-30T09:40:17.857002252Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1431,
+                    "handler_id": 238,
+                    "type": "http_response",
+                    "label": "HTTP error response: internal server error from database",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:108:19",
+                    "function_name": "mySubscription",
+                    "description": "If the database QueryRowContext or Scan returns an error other than sql.ErrNoRows, the repository wraps it as an internal server error and returns it. The handler then returns an HTTP error response to the client via response.Error (i.e., an internal server error response).",
+                    "created_at": "2026-01-30T09:40:17.859710584Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1427,
+                    "handler_id": 238,
+                    "type": "http_response",
+                    "label": "HTTP error response: method not allowed",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:108:19",
+                    "function_name": "mySubscription",
+                    "description": "If the incoming request method is not GET, the handler returns an HTTP error response indicating the method is not allowed (response.Error called with methodNotAllowedError). No database query or other external calls are made in this path.",
+                    "created_at": "2026-01-30T09:40:17.853759065Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1430,
+                    "handler_id": 238,
+                    "type": "http_response",
+                    "label": "HTTP error response: subscription not found",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:108:19",
+                    "function_name": "mySubscription",
+                    "description": "If the database QueryRowContext returns sql.ErrNoRows, the repository returns a NotFound error (\"subscription not found\"). The handler receives this error and returns an HTTP error response to the client via response.Error (i.e., a not-found error response).",
+                    "created_at": "2026-01-30T09:40:17.858392337Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1426,
+                    "handler_id": 238,
+                    "type": "http_response",
+                    "label": "HTTP error response: unauthorized (missing X-User-ID)",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:108:19",
+                    "function_name": "mySubscription",
+                    "description": "If the incoming request does not include the X-User-ID header, the handler returns an HTTP error response indicating the request is unauthorized (response.Error called with unauthorizedError). No database query or other external calls are made in this path.",
+                    "created_at": "2026-01-30T09:40:17.852049194Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T09:39:41.83439693Z",
+            "updated_at": null
+        },
+        {
+            "id": 237,
+            "type": "http",
+            "method": "GET,PUT,POST",
+            "path": "/api/v1/subscriptions/",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "handleSubscriptionByID",
+            "source_function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:26:19",
+            "function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:129:19",
+            "outputs": [
+                {
+                    "id": 1435,
+                    "handler_id": 237,
+                    "type": "database",
+                    "label": "SELECT FROM subscriptions WHERE id = $1",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/repository/subscription_repository.go:70:34",
+                    "function_name": "GetByID",
+                    "description": "Retrieve a subscription by its ID from the subscriptions table (used by GetSubscription and by Update/Cancel flows to fetch existing subscription).",
+                    "created_at": "2026-01-30T09:40:38.758305924Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1444,
+                    "handler_id": 237,
+                    "type": "database",
+                    "label": "SELECT FROM subscriptions WHERE id = $1 (cancel flow)",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/repository/subscription_repository.go:70:34",
+                    "function_name": "GetByID",
+                    "description": "Cancel flow fetches the subscription by id before applying cancellation (same SELECT used by cancel path).",
+                    "created_at": "2026-01-30T09:40:38.766831522Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1441,
+                    "handler_id": 237,
+                    "type": "database",
+                    "label": "SELECT FROM subscriptions WHERE user_id = $1",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/repository/subscription_repository.go:105:34",
+                    "function_name": "GetByUserID",
+                    "description": "Retrieve a subscription by user_id from the subscriptions table (used by the /me GET flow).",
+                    "created_at": "2026-01-30T09:40:38.764026333Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1437,
+                    "handler_id": 237,
+                    "type": "database",
+                    "label": "UPDATE subscriptions SET ... WHERE id = $1",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/repository/subscription_repository.go:140:34",
+                    "function_name": "Update",
+                    "description": "Persist subscription updates (plan/status/payment_provider/external_id/current_period_start/current_period_end/cancelled_at/updated_at) to the subscriptions table when UpdateSubscription or CancelSubscription changes a subscription.",
+                    "created_at": "2026-01-30T09:40:38.760317729Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1445,
+                    "handler_id": 237,
+                    "type": "database",
+                    "label": "UPDATE subscriptions SET ... WHERE id = $1 (cancel flow)",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/repository/subscription_repository.go:140:34",
+                    "function_name": "Update",
+                    "description": "When a subscription is cancelled, the repository updates the subscription row (status -\u003e cancelled, cancelled_at set, updated_at updated) in the database.",
+                    "created_at": "2026-01-30T09:40:38.768166428Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1447,
+                    "handler_id": 237,
+                    "type": "event",
+                    "label": "Publish notification.send event to notification topic (kafka.TopicNotificationSend, event type \"notification.send\")",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/service/subscription_service.go:290:31",
+                    "function_name": "sendNotification",
+                    "description": "On cancellation, a notification request (NotificationRequest) is published to the notification topic with the user ID as the key and event type \"notification.send\". The publish call is performed inside sendNotification.",
+                    "created_at": "2026-01-30T09:40:38.770319727Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1446,
+                    "handler_id": 237,
+                    "type": "event",
+                    "label": "Publish subscription.cancelled event (kafka.TopicSubscriptionCancelled / kafka.EventSubscriptionCancelled)",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/service/subscription_service.go:308:31",
+                    "function_name": "publishSubscriptionEvent",
+                    "description": "When a subscription is cancelled, a SubscriptionCancelled event is published via the producer with the subscription ID as the key and an event payload (SubscriptionEvent). The publish call is performed by the publishSubscriptionEvent helper.",
+                    "created_at": "2026-01-30T09:40:38.769217651Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1438,
+                    "handler_id": 237,
+                    "type": "event",
+                    "label": "Publish subscription.updated event (kafka.TopicSubscriptionUpdated / kafka.EventSubscriptionUpdated)",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/service/subscription_service.go:308:31",
+                    "function_name": "publishSubscriptionEvent",
+                    "description": "When a subscription is updated via PUT, a SubscriptionUpdated event is published to the configured producer with the subscription ID as the key and an event payload (SubscriptionEvent). The publish call is performed by the publishSubscriptionEvent helper.",
+                    "created_at": "2026-01-30T09:40:38.761292264Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1442,
+                    "handler_id": 237,
+                    "type": "http_response",
+                    "label": "HTTP 200 response (GET /api/v1/subscriptions/me)",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:108:19",
+                    "function_name": "mySubscription",
+                    "description": "On successful GET to /api/v1/subscriptions/me the handler returns an HTTP 200 response with the subscription payload for the user.",
+                    "created_at": "2026-01-30T09:40:38.76500894Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1436,
+                    "handler_id": 237,
+                    "type": "http_response",
+                    "label": "HTTP 200 response (GET subscription by ID)",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:129:19",
+                    "function_name": "handleSubscriptionByID",
+                    "description": "On successful GET /api/v1/subscriptions/{id} the handler returns an HTTP 200 response with the subscription payload.",
+                    "created_at": "2026-01-30T09:40:38.759317908Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1448,
+                    "handler_id": 237,
+                    "type": "http_response",
+                    "label": "HTTP 200 response (POST cancel subscription)",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:180:19",
+                    "function_name": "cancelSubscription",
+                    "description": "On successful POST to cancel a subscription the handler returns an HTTP 200 response with the updated (cancelled) subscription payload.",
+                    "created_at": "2026-01-30T09:40:38.771025962Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1439,
+                    "handler_id": 237,
+                    "type": "http_response",
+                    "label": "HTTP 200 response (PUT update subscription)",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:129:19",
+                    "function_name": "handleSubscriptionByID",
+                    "description": "On successful PUT /api/v1/subscriptions/{id} (valid body and update applied) the handler returns an HTTP 200 response with the updated subscription payload.",
+                    "created_at": "2026-01-30T09:40:38.762215995Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1434,
+                    "handler_id": 237,
+                    "type": "http_response",
+                    "label": "HTTP 400 response (bad request: invalid request body)",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:129:19",
+                    "function_name": "handleSubscriptionByID",
+                    "description": "If a PUT request contains an invalid JSON body, the handler returns an HTTP 400 response to the client.",
+                    "created_at": "2026-01-30T09:40:38.75699353Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1432,
+                    "handler_id": 237,
+                    "type": "http_response",
+                    "label": "HTTP 400 response (bad request: subscription ID is required)",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:129:19",
+                    "function_name": "handleSubscriptionByID",
+                    "description": "If the path does not contain a subscription ID, the handler returns an HTTP 400 error response to the client.",
+                    "created_at": "2026-01-30T09:40:38.74141584Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1440,
+                    "handler_id": 237,
+                    "type": "http_response",
+                    "label": "HTTP 401 response (unauthorized) - mySubscription",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:108:19",
+                    "function_name": "mySubscription",
+                    "description": "If the /api/v1/subscriptions/me handler is invoked and X-User-ID header is missing, returns an HTTP 401 response to the client.",
+                    "created_at": "2026-01-30T09:40:38.763107966Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1443,
+                    "handler_id": 237,
+                    "type": "http_response",
+                    "label": "HTTP 405 response (method not allowed) - cancelSubscription",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:180:19",
+                    "function_name": "cancelSubscription",
+                    "description": "If the cancel endpoint is accessed with a non-POST method, the handler returns an HTTP 405 response to the client.",
+                    "created_at": "2026-01-30T09:40:38.765931772Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1433,
+                    "handler_id": 237,
+                    "type": "http_response",
+                    "label": "HTTP 405 response (method not allowed) - handleSubscriptionByID",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:129:19",
+                    "function_name": "handleSubscriptionByID",
+                    "description": "If the request method is not GET or PUT for a subscription-by-id path, the handler returns an HTTP 405 response to the client.",
+                    "created_at": "2026-01-30T09:40:38.753055472Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T09:39:41.833169727Z",
+            "updated_at": null
+        },
+        {
+            "id": 236,
+            "type": "http",
+            "method": "POST",
+            "path": "/api/v1/subscriptions",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "handleSubscriptions",
+            "source_function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:26:19",
+            "function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:76:19",
+            "outputs": [
+                {
+                    "id": 1456,
+                    "handler_id": 236,
+                    "type": "database",
+                    "label": "INSERT INTO subscriptions (...) VALUES (...)",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/repository/subscription_repository.go:53:34",
+                    "function_name": "Create",
+                    "description": "An INSERT is executed to persist the new subscription record into the subscriptions table.",
+                    "created_at": "2026-01-30T09:40:59.403020377Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1452,
+                    "handler_id": 236,
+                    "type": "database",
+                    "label": "SELECT FROM subscriptions WHERE user_id = $1",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/repository/subscription_repository.go:105:34",
+                    "function_name": "GetByUserID",
+                    "description": "A database SELECT is executed to look up an existing subscription for the given user ID (checks whether user already has a subscription).",
+                    "created_at": "2026-01-30T09:40:59.395792358Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1457,
+                    "handler_id": 236,
+                    "type": "event",
+                    "label": "Publish subscription created event to Kafka (PublishWithKey)",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/service/subscription_service.go:308:31",
+                    "function_name": "publishSubscriptionEvent",
+                    "description": "An asynchronous event is published (via the configured producer) with topic and event-type indicating a subscription was created. The call attempts to publish the subscription-created event keyed by subscription ID.",
+                    "created_at": "2026-01-30T09:40:59.404793271Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1454,
+                    "handler_id": 236,
+                    "type": "http",
+                    "label": "HTTP POST /api/v1/payments/charge",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/service/subscription_service.go:275:31",
+                    "function_name": "processPayment",
+                    "description": "An outbound HTTP request is made to the payment service endpoint to charge the initial subscription payment (paymentClient.Post).",
+                    "created_at": "2026-01-30T09:40:59.39959072Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1458,
+                    "handler_id": 236,
+                    "type": "http_response",
+                    "label": "HTTP 201 Created response (subscription created)",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:85:19",
+                    "function_name": "createSubscription",
+                    "description": "On successful creation (and successful payment if required), an HTTP 201 Created response is returned to the client with the created subscription payload.",
+                    "created_at": "2026-01-30T09:40:59.406354511Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1451,
+                    "handler_id": 236,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request response (invalid request body)",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:85:19",
+                    "function_name": "createSubscription",
+                    "description": "If the request body cannot be decoded as the expected CreateSubscriptionRequest JSON, an HTTP 400 Bad Request response is returned to the client.",
+                    "created_at": "2026-01-30T09:40:59.393910239Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1450,
+                    "handler_id": 236,
+                    "type": "http_response",
+                    "label": "HTTP 401 Unauthorized response (missing X-User-ID)",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:85:19",
+                    "function_name": "createSubscription",
+                    "description": "If the X-User-ID header is missing from the request, an HTTP unauthorized error response is returned to the client.",
+                    "created_at": "2026-01-30T09:40:59.391759579Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1453,
+                    "handler_id": 236,
+                    "type": "http_response",
+                    "label": "HTTP error response (conflict: user already has a subscription)",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:85:19",
+                    "function_name": "createSubscription",
+                    "description": "If the repository lookup finds an existing subscription for the user, the service returns a conflict error which is sent to the client as an HTTP error response.",
+                    "created_at": "2026-01-30T09:40:59.397740543Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1459,
+                    "handler_id": 236,
+                    "type": "http_response",
+                    "label": "HTTP error response (generic service or repository error)",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:85:19",
+                    "function_name": "createSubscription",
+                    "description": "If any other error occurs in CreateSubscription (for example repository Create failure, payment client network error, or unexpected service error), that error is returned and sent to the client as an HTTP error response.",
+                    "created_at": "2026-01-30T09:40:59.407954761Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1449,
+                    "handler_id": 236,
+                    "type": "http_response",
+                    "label": "HTTP error response (method not allowed)",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:76:19",
+                    "function_name": "handleSubscriptions",
+                    "description": "If the incoming request method is not POST, an HTTP error response is returned to the client indicating the method is not allowed.",
+                    "created_at": "2026-01-30T09:40:59.375175307Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1455,
+                    "handler_id": 236,
+                    "type": "http_response",
+                    "label": "HTTP error response (payment failed or payment service error)",
+                    "function_id": "/home/evan/Code/rinder/services/subscription/internal/handler/handler.go:85:19",
+                    "function_name": "createSubscription",
+                    "description": "If the payment request fails or the payment response indicates a failure, the service returns an error which is sent to the client as an HTTP error response.",
+                    "created_at": "2026-01-30T09:40:59.40138666Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T09:39:41.831682291Z",
+            "updated_at": null
+        }
+    ]
+}

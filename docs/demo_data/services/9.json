@@ -1,0 +1,859 @@
+{
+    "id": 9,
+    "name": "service-gateway",
+    "git_repo_url": "/home/evan/Code/rinder/services/gateway",
+    "entrypoint_path": "cmd/main.go",
+    "entrypoint_function": "main",
+    "git_org_url": "github.com/rinder",
+    "git_commit": null,
+    "created_at": "2026-01-21T10:18:45.644263748Z",
+    "updated_at": "2026-01-21T10:18:48.633648053Z",
+    "status": "analyzing-completed",
+    "handlers": [
+        {
+            "id": 305,
+            "type": "http",
+            "method": "ANY",
+            "path": "/api/v1/",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "routeAPI",
+            "source_function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:26:19",
+            "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:41:19",
+            "outputs": [
+                {
+                    "id": 1860,
+                    "handler_id": 305,
+                    "type": "http",
+                    "label": "HTTP proxy to backend service",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/proxy/proxy.go:89:25",
+                    "function_name": "anonymous-uDivQbIDR",
+                    "description": "When a request is proxied to a registered backend service, the proxy handler invokes the backend service's http.Handler (proxy.ServeHTTP). This forwards the request to the configured backend implementation (i.e., performs the actual proxied HTTP handling to the backend service).",
+                    "created_at": "2026-01-30T10:26:56.043443877Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1855,
+                    "handler_id": 305,
+                    "type": "http_response",
+                    "label": "HTTP 401 JSON response (Invalid authorization header format)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:103:19",
+                    "function_name": "authenticatedProxy",
+                    "description": "When an authenticated route is hit but the Authorization header does not have the expected 'Bearer \u003ctoken\u003e' format, the gateway returns HTTP 401 with a JSON error body to the client.",
+                    "created_at": "2026-01-30T10:26:56.035761611Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1856,
+                    "handler_id": 305,
+                    "type": "http_response",
+                    "label": "HTTP 401 JSON response (Invalid or expired token)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:103:19",
+                    "function_name": "authenticatedProxy",
+                    "description": "When token validation fails (invalid or expired) during processing of an authenticated route, the gateway returns HTTP 401 with a JSON error body to the client.",
+                    "created_at": "2026-01-30T10:26:56.038313143Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1854,
+                    "handler_id": 305,
+                    "type": "http_response",
+                    "label": "HTTP 401 JSON response (Missing authorization header)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:103:19",
+                    "function_name": "authenticatedProxy",
+                    "description": "When an authenticated route is hit but the Authorization header is missing, the gateway returns HTTP 401 with a JSON error body to the client.",
+                    "created_at": "2026-01-30T10:26:56.033061476Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1852,
+                    "handler_id": 305,
+                    "type": "http_response",
+                    "label": "HTTP 404 JSON response (Endpoint not found)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:41:19",
+                    "function_name": "routeAPI",
+                    "description": "If the incoming request path under /api/v1 does not match any configured route, the gateway returns an HTTP 404 response with a JSON error body to the client.",
+                    "created_at": "2026-01-30T10:26:54.21630289Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1857,
+                    "handler_id": 305,
+                    "type": "http_response",
+                    "label": "HTTP 404 JSON response (Service not found)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/proxy/proxy.go:89:25",
+                    "function_name": "anonymous-uDivQbIDR",
+                    "description": "When proxying, if the named backend service is not registered in the proxy manager's services map, the proxy handler returns HTTP 404 with a JSON error body to the client.",
+                    "created_at": "2026-01-30T10:26:56.041045484Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:25:47.967563685Z",
+            "updated_at": null
+        },
+        {
+            "id": 316,
+            "type": "http",
+            "method": "ANY",
+            "path": "/api/v1/analytics",
+            "source_function_name": "routeAPI",
+            "function_name": "proxyToService",
+            "source_function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:41:19",
+            "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:96:19",
+            "outputs": [
+                {
+                    "id": 1733,
+                    "handler_id": 316,
+                    "type": "http",
+                    "label": "Forward HTTP request to backend service (proxy handler invoked)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/proxy/proxy.go:89:25",
+                    "function_name": "anonymous-uDivQbIDR",
+                    "description": "If the named service exists in the proxy manager's services map, the stored http.Handler for that service is invoked via ServeHTTP(w, r). That handler is expected to proxy/forward the incoming HTTP request (full path preserved) to the backend service, resulting in outgoing HTTP requests to that backend and the backend's HTTP response being returned to the original client.",
+                    "created_at": "2026-01-30T10:26:23.021900252Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1734,
+                    "handler_id": 316,
+                    "type": "http_response",
+                    "label": "HTTP 404 JSON response (service not found)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/proxy/proxy.go:89:25",
+                    "function_name": "anonymous-uDivQbIDR",
+                    "description": "If the named service does not exist in the proxy manager's services map, the handler writes an HTTP 404 response with Content-Type: application/json and a JSON body: {\"success\":false,\"error\":{\"code\":\"SERVICE_NOT_FOUND\",\"message\":\"Service not found\"}}.",
+                    "created_at": "2026-01-30T10:26:23.033189866Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:25:47.99214106Z",
+            "updated_at": null
+        },
+        {
+            "id": 306,
+            "type": "http",
+            "method": "ANY",
+            "path": "/api/v1/auth",
+            "source_function_name": "routeAPI",
+            "function_name": "proxyToService",
+            "source_function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:41:19",
+            "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:96:19",
+            "outputs": [
+                {
+                    "id": 1843,
+                    "handler_id": 306,
+                    "type": "http",
+                    "label": "Request forwarded to registered service handler (proxy.ServeHTTP)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/proxy/proxy.go:89:25",
+                    "function_name": "anonymous-uDivQbIDR",
+                    "description": "When the requested service exists in m.services, the gateway invokes the registered service handler's ServeHTTP (proxy.ServeHTTP). That handler is responsible for performing any network calls to backend services and for writing the HTTP response back to the client. In other words, the incoming HTTP request is forwarded to the proxied handler which performs the actual external interactions.",
+                    "created_at": "2026-01-30T10:26:41.011205419Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1842,
+                    "handler_id": 306,
+                    "type": "http_response",
+                    "label": "HTTP 404 JSON response (SERVICE_NOT_FOUND)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/proxy/proxy.go:89:25",
+                    "function_name": "anonymous-uDivQbIDR",
+                    "description": "If the requested service name is not registered in the proxy manager, the gateway returns an HTTP 404 response with Content-Type: application/json and a JSON body {\"success\":false,\"error\":{\"code\":\"SERVICE_NOT_FOUND\",\"message\":\"Service not found\"}}.",
+                    "created_at": "2026-01-30T10:26:40.999486223Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:25:47.969361926Z",
+            "updated_at": null
+        },
+        {
+            "id": 312,
+            "type": "http",
+            "method": "ANY",
+            "path": "/api/v1/matches",
+            "source_function_name": "routeAPI",
+            "function_name": "authenticatedProxy",
+            "source_function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:41:19",
+            "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:103:19",
+            "outputs": [
+                {
+                    "id": 1840,
+                    "handler_id": 312,
+                    "type": "http",
+                    "label": "HTTP request(s) to backend service (proxied)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/proxy/proxy.go:88:19",
+                    "function_name": "Proxy",
+                    "description": "When the named backend service exists, the proxy handler's ServeHTTP is invoked; that handler will perform one or more outbound HTTP request(s) to the backend service using the original request method/path. The incoming request has X-User-ID and X-User-Email headers set before proxying.",
+                    "created_at": "2026-01-30T10:26:39.900936636Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1837,
+                    "handler_id": 312,
+                    "type": "http_response",
+                    "label": "HTTP 401 Unauthorized JSON response (invalid authorization header format)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:103:19",
+                    "function_name": "authenticatedProxy",
+                    "description": "If the Authorization header is present but not in the expected \"Bearer \u003ctoken\u003e\" format, the handler writes a 401 response with a JSON error body and returns immediately to the client.",
+                    "created_at": "2026-01-30T10:26:39.893208235Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1838,
+                    "handler_id": 312,
+                    "type": "http_response",
+                    "label": "HTTP 401 Unauthorized JSON response (invalid or expired token)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:103:19",
+                    "function_name": "authenticatedProxy",
+                    "description": "If JWT validation (h.jwtAuth.ValidateToken) returns an error, the handler writes a 401 response with a JSON error body and returns immediately to the client.",
+                    "created_at": "2026-01-30T10:26:39.897253829Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1836,
+                    "handler_id": 312,
+                    "type": "http_response",
+                    "label": "HTTP 401 Unauthorized JSON response (missing authorization header)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:103:19",
+                    "function_name": "authenticatedProxy",
+                    "description": "If the incoming request has no Authorization header, the handler writes a 401 response with a JSON error body and returns immediately to the client.",
+                    "created_at": "2026-01-30T10:26:39.880920644Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1839,
+                    "handler_id": 312,
+                    "type": "http_response",
+                    "label": "HTTP 404 Not Found JSON response (service not found)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/proxy/proxy.go:88:19",
+                    "function_name": "Proxy",
+                    "description": "When proxying, if the requested backend service name does not exist in the proxy manager's service map, the proxy handler writes a 404 response with a JSON error body to the client.",
+                    "created_at": "2026-01-30T10:26:39.899354504Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1841,
+                    "handler_id": 312,
+                    "type": "http_response",
+                    "label": "HTTP response proxied back to original client",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/proxy/proxy.go:88:19",
+                    "function_name": "Proxy",
+                    "description": "The response returned by the backend service (from the proxy's outbound HTTP request) is written back to the original client by the proxy handler (i.e., the proxied response is forwarded to the client).",
+                    "created_at": "2026-01-30T10:26:39.902432972Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:25:47.978540276Z",
+            "updated_at": null
+        },
+        {
+            "id": 315,
+            "type": "http",
+            "method": "ANY",
+            "path": "/api/v1/media",
+            "source_function_name": "routeAPI",
+            "function_name": "authenticatedProxy",
+            "source_function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:41:19",
+            "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:103:19",
+            "outputs": [
+                {
+                    "id": 1770,
+                    "handler_id": 315,
+                    "type": "http",
+                    "label": "HTTP request forwarded to backend service (proxied request)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/proxy/proxy.go:88:19",
+                    "function_name": "Proxy",
+                    "description": "When the token is valid and the target service exists, the gateway proxies the incoming HTTP request to the backend service handler. The proxied request is forwarded with the original path and method and includes the added headers (X-User-ID and X-User-Email). The actual network request to the backend is performed by the service's http.Handler via proxy.ServeHTTP.",
+                    "created_at": "2026-01-30T10:26:27.062379985Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1767,
+                    "handler_id": 315,
+                    "type": "http_response",
+                    "label": "HTTP 401 JSON response (Invalid authorization header format)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:103:19",
+                    "function_name": "authenticatedProxy",
+                    "description": "If the Authorization header is present but not in the expected 'Bearer \u003ctoken\u003e' format, the gateway returns an HTTP 401 response with a JSON error body indicating an invalid authorization header format.",
+                    "created_at": "2026-01-30T10:26:27.057292492Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1768,
+                    "handler_id": 315,
+                    "type": "http_response",
+                    "label": "HTTP 401 JSON response (Invalid or expired token)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:103:19",
+                    "function_name": "authenticatedProxy",
+                    "description": "If the provided bearer token fails validation (invalid or expired), the gateway returns an HTTP 401 response with a JSON error body indicating an invalid or expired token.",
+                    "created_at": "2026-01-30T10:26:27.060006405Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1766,
+                    "handler_id": 315,
+                    "type": "http_response",
+                    "label": "HTTP 401 JSON response (Missing authorization header)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:103:19",
+                    "function_name": "authenticatedProxy",
+                    "description": "If the incoming request has no Authorization header, the gateway returns an HTTP 401 response with a JSON error body indicating a missing authorization header.",
+                    "created_at": "2026-01-30T10:26:27.044362478Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1769,
+                    "handler_id": 315,
+                    "type": "http_response",
+                    "label": "HTTP 404 JSON response (Service not found)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/proxy/proxy.go:88:19",
+                    "function_name": "Proxy",
+                    "description": "If the requested backend service is not registered in the proxy manager (m.services), the gateway returns an HTTP 404 response with a JSON error body indicating the service was not found.",
+                    "created_at": "2026-01-30T10:26:27.061317248Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:25:47.990716684Z",
+            "updated_at": null
+        },
+        {
+            "id": 313,
+            "type": "http",
+            "method": "ANY",
+            "path": "/api/v1/notifications",
+            "source_function_name": "routeAPI",
+            "function_name": "authenticatedProxy",
+            "source_function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:41:19",
+            "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:103:19",
+            "outputs": [
+                {
+                    "id": 1818,
+                    "handler_id": 313,
+                    "type": "http",
+                    "label": "Proxied HTTP request to downstream backend service",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/proxy/proxy.go:89:25",
+                    "function_name": "anonymous-uDivQbIDR",
+                    "description": "When a valid token is provided and a backend exists for the service, the proxy's ServeHTTP is invoked, which forwards (proxies) the incoming HTTP request to the configured backend service. This produces an outbound HTTP request to that downstream service.",
+                    "created_at": "2026-01-30T10:26:32.218071452Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1814,
+                    "handler_id": 313,
+                    "type": "http_response",
+                    "label": "HTTP 401 JSON response (Invalid authorization header format)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:103:19",
+                    "function_name": "authenticatedProxy",
+                    "description": "If the Authorization header is present but not in the expected 'Bearer \u003ctoken\u003e' format, the handler returns an HTTP 401 response with a JSON body indicating UNAUTHORIZED / Invalid authorization header format.",
+                    "created_at": "2026-01-30T10:26:32.213865154Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1816,
+                    "handler_id": 313,
+                    "type": "http_response",
+                    "label": "HTTP 401 JSON response (Invalid or expired token)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:103:19",
+                    "function_name": "authenticatedProxy",
+                    "description": "If token validation fails (invalid or expired token), the handler returns an HTTP 401 response with a JSON body indicating UNAUTHORIZED / Invalid or expired token.",
+                    "created_at": "2026-01-30T10:26:32.215756223Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1812,
+                    "handler_id": 313,
+                    "type": "http_response",
+                    "label": "HTTP 401 JSON response (Missing authorization header)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:103:19",
+                    "function_name": "authenticatedProxy",
+                    "description": "If the incoming request has no Authorization header, the handler returns an HTTP 401 response with a JSON body indicating UNAUTHORIZED / Missing authorization header.",
+                    "created_at": "2026-01-30T10:26:32.198906833Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1817,
+                    "handler_id": 313,
+                    "type": "http_response",
+                    "label": "HTTP 404 JSON response (Service not found)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/proxy/proxy.go:89:25",
+                    "function_name": "anonymous-uDivQbIDR",
+                    "description": "If the proxy manager has no backend registered for the requested service name, the returned handler writes an HTTP 404 response with a JSON body indicating SERVICE_NOT_FOUND.",
+                    "created_at": "2026-01-30T10:26:32.217100487Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1819,
+                    "handler_id": 313,
+                    "type": "http_response",
+                    "label": "Proxied HTTP response forwarded to client",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/proxy/proxy.go:89:25",
+                    "function_name": "anonymous-uDivQbIDR",
+                    "description": "As part of proxying, the response returned by the downstream backend is written back to the original client (the proxied response is forwarded through the proxy to the client).",
+                    "created_at": "2026-01-30T10:26:32.218709836Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:25:47.97975642Z",
+            "updated_at": null
+        },
+        {
+            "id": 309,
+            "type": "http",
+            "method": "ANY",
+            "path": "/api/v1/profiles",
+            "source_function_name": "routeAPI",
+            "function_name": "authenticatedProxy",
+            "source_function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:41:19",
+            "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:103:19",
+            "outputs": [
+                {
+                    "id": 1809,
+                    "handler_id": 309,
+                    "type": "http",
+                    "label": "Proxied request forwarded to backend service (via proxy.ServeHTTP)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/proxy/proxy.go:88:19",
+                    "function_name": "Proxy",
+                    "description": "After successful token validation, the request (with X-User-ID and X-User-Email headers added) is forwarded to the configured backend service by invoking the service proxy's ServeHTTP. This results in an HTTP request being sent to the downstream/backend service.",
+                    "created_at": "2026-01-30T10:26:32.014230571Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1807,
+                    "handler_id": 309,
+                    "type": "http_response",
+                    "label": "HTTP 401 Unauthorized JSON response (invalid authorization header format)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:103:19",
+                    "function_name": "authenticatedProxy",
+                    "description": "The handler returns an HTTP 401 response to the client with a JSON body indicating the Authorization header format is invalid.",
+                    "created_at": "2026-01-30T10:26:32.008492679Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1808,
+                    "handler_id": 309,
+                    "type": "http_response",
+                    "label": "HTTP 401 Unauthorized JSON response (invalid or expired token)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:103:19",
+                    "function_name": "authenticatedProxy",
+                    "description": "The handler returns an HTTP 401 response to the client with a JSON body indicating the token is invalid or expired (on jwt validation failure).",
+                    "created_at": "2026-01-30T10:26:32.012410804Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1806,
+                    "handler_id": 309,
+                    "type": "http_response",
+                    "label": "HTTP 401 Unauthorized JSON response (missing authorization header)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:103:19",
+                    "function_name": "authenticatedProxy",
+                    "description": "The handler returns an HTTP 401 response to the client with a JSON body indicating the authorization header is missing.",
+                    "created_at": "2026-01-30T10:26:31.996397792Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1810,
+                    "handler_id": 309,
+                    "type": "http_response",
+                    "label": "HTTP 404 Not Found JSON response (service not found)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/proxy/proxy.go:88:19",
+                    "function_name": "Proxy",
+                    "description": "If the requested service is not registered in the proxy manager, the proxy handler returns an HTTP 404 response to the client with a JSON body indicating the service was not found.",
+                    "created_at": "2026-01-30T10:26:32.015794614Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:25:47.974092421Z",
+            "updated_at": null
+        },
+        {
+            "id": 310,
+            "type": "http",
+            "method": "ANY",
+            "path": "/api/v1/profiles/me",
+            "source_function_name": "routeAPI",
+            "function_name": "authenticatedProxy",
+            "source_function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:41:19",
+            "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:103:19",
+            "outputs": [
+                {
+                    "id": 1848,
+                    "handler_id": 310,
+                    "type": "http",
+                    "label": "Outgoing HTTP request to backend service via proxy.ServeHTTP",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/proxy/proxy.go:88:19",
+                    "function_name": "Proxy",
+                    "description": "When the requested service exists, the proxy's ServeHTTP is invoked which forwards the incoming HTTP request to the configured backend service (initiating an outbound HTTP request to that backend).",
+                    "created_at": "2026-01-30T10:26:42.160613311Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1845,
+                    "handler_id": 310,
+                    "type": "http_response",
+                    "label": "HTTP 401 Unauthorized JSON (Invalid authorization header format)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:103:19",
+                    "function_name": "authenticatedProxy",
+                    "description": "If the Authorization header is present but not in the expected \"Bearer \u003ctoken\u003e\" format, the handler returns an HTTP 401 response with a JSON error payload indicating invalid header format.",
+                    "created_at": "2026-01-30T10:26:42.154207473Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1846,
+                    "handler_id": 310,
+                    "type": "http_response",
+                    "label": "HTTP 401 Unauthorized JSON (Invalid or expired token)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:103:19",
+                    "function_name": "authenticatedProxy",
+                    "description": "If ValidateToken returns an error (token invalid or expired), the handler returns an HTTP 401 response with a JSON error payload indicating the token is invalid or expired.",
+                    "created_at": "2026-01-30T10:26:42.157170142Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1844,
+                    "handler_id": 310,
+                    "type": "http_response",
+                    "label": "HTTP 401 Unauthorized JSON (Missing authorization header)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:103:19",
+                    "function_name": "authenticatedProxy",
+                    "description": "If the incoming request has no Authorization header, the handler returns an HTTP 401 response with a JSON error payload indicating the missing authorization header.",
+                    "created_at": "2026-01-30T10:26:42.141253584Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1847,
+                    "handler_id": 310,
+                    "type": "http_response",
+                    "label": "HTTP 404 Not Found JSON (Service not found)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/proxy/proxy.go:88:19",
+                    "function_name": "Proxy",
+                    "description": "When the proxy manager does not have a backend registered for the requested service name, the proxy handler returns an HTTP 404 response with a JSON error payload indicating the service was not found.",
+                    "created_at": "2026-01-30T10:26:42.15900105Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1849,
+                    "handler_id": 310,
+                    "type": "http_response",
+                    "label": "HTTP response forwarded from backend to client by proxy",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/proxy/proxy.go:88:19",
+                    "function_name": "Proxy",
+                    "description": "The proxy streams/forwards the backend service's HTTP response (status, headers, and body) back to the original client.",
+                    "created_at": "2026-01-30T10:26:42.161982453Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:25:47.975572644Z",
+            "updated_at": null
+        },
+        {
+            "id": 311,
+            "type": "http",
+            "method": "ANY",
+            "path": "/api/v1/swipes",
+            "source_function_name": "routeAPI",
+            "function_name": "authenticatedProxy",
+            "source_function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:41:19",
+            "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:103:19",
+            "outputs": [
+                {
+                    "id": 1804,
+                    "handler_id": 311,
+                    "type": "http",
+                    "label": "Proxied HTTP request to backend service",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/proxy/proxy.go:88:19",
+                    "function_name": "Proxy",
+                    "description": "When a valid token is provided and the requested service exists, the request is forwarded to the backend service handler (the proxied handler's ServeHTTP is invoked). The forwarded request includes the original request data and the added headers X-User-ID and X-User-Email.",
+                    "created_at": "2026-01-30T10:26:31.813561158Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1801,
+                    "handler_id": 311,
+                    "type": "http_response",
+                    "label": "HTTP 401 Unauthorized JSON response (invalid authorization header format)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:103:19",
+                    "function_name": "authenticatedProxy",
+                    "description": "If the Authorization header is present but not in the expected \"Bearer \u003ctoken\u003e\" format, the handler returns an HTTP 401 response with a JSON body indicating UNAUTHORIZED / Invalid authorization header format.",
+                    "created_at": "2026-01-30T10:26:31.80612784Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1802,
+                    "handler_id": 311,
+                    "type": "http_response",
+                    "label": "HTTP 401 Unauthorized JSON response (invalid or expired token)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:103:19",
+                    "function_name": "authenticatedProxy",
+                    "description": "If token validation fails, the handler returns an HTTP 401 response with a JSON body indicating UNAUTHORIZED / Invalid or expired token.",
+                    "created_at": "2026-01-30T10:26:31.808991371Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1800,
+                    "handler_id": 311,
+                    "type": "http_response",
+                    "label": "HTTP 401 Unauthorized JSON response (missing authorization header)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:103:19",
+                    "function_name": "authenticatedProxy",
+                    "description": "If the incoming request has no Authorization header, the handler returns an HTTP 401 response with a JSON body indicating UNAUTHORIZED / Missing authorization header.",
+                    "created_at": "2026-01-30T10:26:31.792064307Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1803,
+                    "handler_id": 311,
+                    "type": "http_response",
+                    "label": "HTTP 404 Not Found JSON response (service not found)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/proxy/proxy.go:88:19",
+                    "function_name": "Proxy",
+                    "description": "If the proxy manager does not have an entry for the requested backend service name, the proxy handler returns an HTTP 404 response with a JSON body indicating SERVICE_NOT_FOUND / Service not found.",
+                    "created_at": "2026-01-30T10:26:31.811522022Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1805,
+                    "handler_id": 311,
+                    "type": "http_response",
+                    "label": "Proxied backend response forwarded to client",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/proxy/proxy.go:88:19",
+                    "function_name": "Proxy",
+                    "description": "The response produced by the backend service (whatever status/body it returns) is written back to the original client by the proxied handler.",
+                    "created_at": "2026-01-30T10:26:31.815026152Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:25:47.977173379Z",
+            "updated_at": null
+        },
+        {
+            "id": 307,
+            "type": "http",
+            "method": "ANY",
+            "path": "/api/v1/users",
+            "source_function_name": "routeAPI",
+            "function_name": "authenticatedProxy",
+            "source_function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:41:19",
+            "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:103:19",
+            "outputs": [
+                {
+                    "id": 1859,
+                    "handler_id": 307,
+                    "type": "http",
+                    "label": "Outbound proxied HTTP request to backend service",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/proxy/proxy.go:88:19",
+                    "function_name": "Proxy",
+                    "description": "When authentication succeeds and the requested service exists, the request is forwarded to the registered service handler (m.services[serviceName]). That handler (the proxied backend handler) will perform an outbound HTTP request to the backend service as part of proxying the incoming request. The request forwarded to the backend will include the added headers (X-User-ID and X-User-Email). (The invocation that triggers this is the call to proxy.ServeHTTP.)",
+                    "created_at": "2026-01-30T10:26:56.045268444Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1851,
+                    "handler_id": 307,
+                    "type": "http_response",
+                    "label": "HTTP 401 JSON response (invalid authorization header format)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:103:19",
+                    "function_name": "authenticatedProxy",
+                    "description": "If the incoming Authorization header is present but not in the expected 'Bearer \u003ctoken\u003e' format, the handler returns an HTTP 401 response with a JSON error body indicating an invalid authorization header format.",
+                    "created_at": "2026-01-30T10:26:56.025693402Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1853,
+                    "handler_id": 307,
+                    "type": "http_response",
+                    "label": "HTTP 401 JSON response (invalid or expired token)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:103:19",
+                    "function_name": "authenticatedProxy",
+                    "description": "If the JWT validation fails (invalid or expired token), the handler returns an HTTP 401 response with a JSON error body indicating an invalid or expired token.",
+                    "created_at": "2026-01-30T10:26:56.029610956Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1850,
+                    "handler_id": 307,
+                    "type": "http_response",
+                    "label": "HTTP 401 JSON response (missing authorization header)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:103:19",
+                    "function_name": "authenticatedProxy",
+                    "description": "If the incoming request has no Authorization header, the handler returns an HTTP 401 response with a JSON error body indicating a missing authorization header.",
+                    "created_at": "2026-01-30T10:26:54.276596035Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1858,
+                    "handler_id": 307,
+                    "type": "http_response",
+                    "label": "HTTP 404 JSON response (service not found)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/proxy/proxy.go:88:19",
+                    "function_name": "Proxy",
+                    "description": "If the requested backend service name is not registered in the proxy manager's services map, the proxy handler returns an HTTP 404 response with a JSON error body indicating the service was not found.",
+                    "created_at": "2026-01-30T10:26:56.034411413Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1861,
+                    "handler_id": 307,
+                    "type": "http_response",
+                    "label": "HTTP response streamed back to client from proxied backend",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/proxy/proxy.go:88:19",
+                    "function_name": "Proxy",
+                    "description": "After the proxied handler forwards the request to the backend, the backend's HTTP response is streamed/returned and written to the original client's ResponseWriter. This is performed by the proxied service handler which is invoked via proxy.ServeHTTP.",
+                    "created_at": "2026-01-30T10:26:56.066361394Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:25:47.970928085Z",
+            "updated_at": null
+        },
+        {
+            "id": 303,
+            "type": "http",
+            "method": "ANY",
+            "path": "/health",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "healthCheck",
+            "source_function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:26:19",
+            "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:35:19",
+            "outputs": [
+                {
+                    "id": 1625,
+                    "handler_id": 303,
+                    "type": "http_response",
+                    "label": "HTTP 200 JSON response",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:35:19",
+                    "function_name": "healthCheck",
+                    "description": "Returns an HTTP 200 response to the client with Content-Type 'application/json' and body '{\"status\":\"healthy\",\"service\":\"gateway\"}'.",
+                    "created_at": "2026-01-30T10:26:00.850545412Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:25:47.951578048Z",
+            "updated_at": null
+        },
+        {
+            "id": 304,
+            "type": "http",
+            "method": "ANY",
+            "path": "/health/services",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "HealthCheck",
+            "source_function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:26:19",
+            "function_id": "/home/evan/Code/rinder/services/gateway/internal/proxy/proxy.go:139:19",
+            "outputs": [
+                {
+                    "id": 1659,
+                    "handler_id": 304,
+                    "type": "http",
+                    "label": "HTTP GET {service_url}/health (for each entry in m.urls)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/proxy/proxy.go:139:19",
+                    "function_name": "HealthCheck",
+                    "description": "For each configured backend URL in m.urls, the handler performs an HTTP GET request to that service's /health endpoint (healthURL := url + \"/health\"). The code treats any network error or any response with a non-200 status as the service being unhealthy.",
+                    "created_at": "2026-01-30T10:26:10.630894848Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1661,
+                    "handler_id": 304,
+                    "type": "http_response",
+                    "label": "HTTP JSON response to the client (200 OK or 503 Service Unavailable)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/proxy/proxy.go:139:19",
+                    "function_name": "HealthCheck",
+                    "description": "The handler returns an HTTP response to the original client: it sets the Content-Type header to application/json, writes status 200 OK if all backend health checks returned 200, otherwise writes status 503 Service Unavailable. The body is a small JSON document of the form {\"gateway\":\"healthy\",\"services\":{...}} where each service name maps to \"healthy\" or \"unhealthy\".",
+                    "created_at": "2026-01-30T10:26:10.643314352Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:25:47.964456759Z",
+            "updated_at": null
+        },
+        {
+            "id": 314,
+            "type": "http",
+            "method": "GET",
+            "path": "/api/v1/media",
+            "source_function_name": "routeAPI",
+            "function_name": "proxyToService",
+            "source_function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:41:19",
+            "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:96:19",
+            "outputs": [
+                {
+                    "id": 1813,
+                    "handler_id": 314,
+                    "type": "http",
+                    "label": "Proxied HTTP request to backend service",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/proxy/proxy.go:88:19",
+                    "function_name": "Proxy",
+                    "description": "If the named service exists, the proxy handler delegates the request to the configured service proxy (proxy.ServeHTTP). That delegation results in the incoming HTTP request being forwarded to the backend service configured in m.services[serviceName] (i.e., an outbound HTTP request from this gateway to the backend service).",
+                    "created_at": "2026-01-30T10:26:32.210229806Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1811,
+                    "handler_id": 314,
+                    "type": "http_response",
+                    "label": "HTTP 404 JSON response (service not found)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/proxy/proxy.go:88:19",
+                    "function_name": "Proxy",
+                    "description": "If the named service is not registered in the proxy manager (m.services[serviceName] does not exist), the proxy handler writes an HTTP 404 response with Content-Type: application/json and the JSON body: {\"success\":false,\"error\":{\"code\":\"SERVICE_NOT_FOUND\",\"message\":\"Service not found\"}}.",
+                    "created_at": "2026-01-30T10:26:32.198824724Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1815,
+                    "handler_id": 314,
+                    "type": "http_response",
+                    "label": "HTTP response returned to the original client (proxied backend response)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/proxy/proxy.go:88:19",
+                    "function_name": "Proxy",
+                    "description": "As part of proxy.ServeHTTP handling, the response produced by the backend service (status, headers, body) is written back to the original http.ResponseWriter so the client receives the backend's HTTP response via the gateway.",
+                    "created_at": "2026-01-30T10:26:32.214945004Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:25:47.987642365Z",
+            "updated_at": null
+        },
+        {
+            "id": 308,
+            "type": "http",
+            "method": "GET",
+            "path": "/api/v1/profiles",
+            "source_function_name": "routeAPI",
+            "function_name": "proxyToService",
+            "source_function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:41:19",
+            "function_id": "/home/evan/Code/rinder/services/gateway/internal/handler/handler.go:96:19",
+            "outputs": [
+                {
+                    "id": 1772,
+                    "handler_id": 308,
+                    "type": "http",
+                    "label": "Outgoing proxied HTTP request(s) to backend service",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/proxy/proxy.go:89:25",
+                    "function_name": "anonymous-uDivQbIDR",
+                    "description": "When the requested service is registered, the proxy handler forwards the incoming HTTP request to the backend service by invoking the stored proxy handler (proxy.ServeHTTP). This produces one or more outbound HTTP request(s) from this gateway to the target backend service (exact requests depend on the proxy implementation and configuration).",
+                    "created_at": "2026-01-30T10:26:28.107746164Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1771,
+                    "handler_id": 308,
+                    "type": "http_response",
+                    "label": "HTTP 404 JSON response (SERVICE_NOT_FOUND)",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/proxy/proxy.go:89:25",
+                    "function_name": "anonymous-uDivQbIDR",
+                    "description": "If the requested service name is not registered in the proxy manager, the gateway returns an HTTP 404 response with Content-Type: application/json and the JSON body {\"success\":false,\"error\":{\"code\":\"SERVICE_NOT_FOUND\",\"message\":\"Service not found\"}}.",
+                    "created_at": "2026-01-30T10:26:28.105378839Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1773,
+                    "handler_id": 308,
+                    "type": "http_response",
+                    "label": "HTTP response proxied from backend to client",
+                    "function_id": "/home/evan/Code/rinder/services/gateway/internal/proxy/proxy.go:89:25",
+                    "function_name": "anonymous-uDivQbIDR",
+                    "description": "The response received from the backend service (resulting from the proxied outbound request(s)) is written back to the original client by the proxy handler (i.e., the gateway returns the proxied response to the client).",
+                    "created_at": "2026-01-30T10:26:28.109221141Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:25:47.972399931Z",
+            "updated_at": null
+        }
+    ]
+}

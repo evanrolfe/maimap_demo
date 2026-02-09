@@ -1,0 +1,548 @@
+{
+    "id": 14,
+    "name": "service-profile",
+    "git_repo_url": "/home/evan/Code/rinder/services/profile",
+    "entrypoint_path": "cmd/main.go",
+    "entrypoint_function": "main",
+    "git_org_url": "github.com/rinder",
+    "git_commit": null,
+    "created_at": "2026-01-21T10:24:35.990340355Z",
+    "updated_at": "2026-01-21T10:24:38.621573077Z",
+    "status": "analyzing-completed",
+    "handlers": [
+        {
+            "id": 342,
+            "type": "http",
+            "method": "ANY",
+            "path": "/api/v1/profiles",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "profiles",
+            "source_function_id": "/home/evan/Code/rinder/services/profile/internal/handler/handler.go:28:19",
+            "function_id": "/home/evan/Code/rinder/services/profile/internal/handler/handler.go:45:19",
+            "outputs": [
+                {
+                    "id": 1979,
+                    "handler_id": 342,
+                    "type": "database",
+                    "label": "COUNT documents in profiles collection (list total)",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/repository/profile_repository.go:127:29",
+                    "function_name": "List",
+                    "description": "When listing profiles, the repository counts total matching profiles by executing CountDocuments with the assembled query (includes filters such as is_active, breed, gender, size, age range, user filters).",
+                    "created_at": "2026-01-30T10:33:27.627593838Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1975,
+                    "handler_id": 342,
+                    "type": "database",
+                    "label": "COUNT documents in profiles collection filtered by user_id",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/repository/profile_repository.go:197:29",
+                    "function_name": "CountByUserID",
+                    "description": "Counts how many profiles exist for a given user (used to enforce per-user profile limits). Executes a CountDocuments against the MongoDB profiles collection with filter {\"user_id\": userID}.",
+                    "created_at": "2026-01-30T10:33:27.622342675Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1976,
+                    "handler_id": 342,
+                    "type": "database",
+                    "label": "COUNT documents in profiles collection filtered by user_id and name",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/repository/profile_repository.go:206:29",
+                    "function_name": "ExistsByUserIDAndName",
+                    "description": "Checks whether a profile with the same name already exists for the user. Executes a CountDocuments against the MongoDB profiles collection with filter {\"user_id\": userID, \"name\": name}.",
+                    "created_at": "2026-01-30T10:33:27.623598024Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1980,
+                    "handler_id": 342,
+                    "type": "database",
+                    "label": "FIND documents in profiles collection with query and pagination",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/repository/profile_repository.go:127:29",
+                    "function_name": "List",
+                    "description": "Retrieves a page of profile documents matching the filter by executing Find on the MongoDB profiles collection with query, limit, skip (offset) and sort options; the cursor results are then decoded into profiles.",
+                    "created_at": "2026-01-30T10:33:27.62891984Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1977,
+                    "handler_id": 342,
+                    "type": "database",
+                    "label": "INSERT document into profiles collection",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/repository/profile_repository.go:56:29",
+                    "function_name": "Create",
+                    "description": "Inserts the newly created profile document into the MongoDB profiles collection via InsertOne.",
+                    "created_at": "2026-01-30T10:33:27.624957853Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1978,
+                    "handler_id": 342,
+                    "type": "event",
+                    "label": "Publish profile created event to Kafka (TopicProfileCreated)",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/service/profile_service.go:41:26",
+                    "function_name": "CreateProfile",
+                    "description": "After creating a profile, the service publishes a ProfileCreatedEvent to Kafka using the profile ID as the key and the configured profile-created topic/event type.",
+                    "created_at": "2026-01-30T10:33:27.626249427Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1981,
+                    "handler_id": 342,
+                    "type": "http_response",
+                    "label": "HTTP 200 JSON response (profiles list with pagination metadata)",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/handler/handler.go:190:19",
+                    "function_name": "listProfiles",
+                    "description": "On successful retrieval of profiles, the handler returns an HTTP 200 response with the list of profiles and pagination metadata in JSON format.",
+                    "created_at": "2026-01-30T10:33:27.630472494Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1974,
+                    "handler_id": 342,
+                    "type": "http_response",
+                    "label": "HTTP 201 Created (profile JSON)",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/handler/handler.go:125:19",
+                    "function_name": "createProfile",
+                    "description": "On successful profile creation, the handler returns an HTTP 201 Created response with the created profile payload to the client.",
+                    "created_at": "2026-01-30T10:33:27.620921381Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1972,
+                    "handler_id": 342,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request response (invalid request body)",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/handler/handler.go:125:19",
+                    "function_name": "createProfile",
+                    "description": "If the request body for profile creation cannot be decoded as JSON, the createProfile handler returns an HTTP 400 error to the client.",
+                    "created_at": "2026-01-30T10:33:27.617420219Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1970,
+                    "handler_id": 342,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request response (method not allowed)",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/handler/handler.go:45:19",
+                    "function_name": "profiles",
+                    "description": "If the incoming HTTP method is not GET or POST, the handler returns an HTTP error response indicating the method is not allowed (bad request).",
+                    "created_at": "2026-01-30T10:33:27.601248081Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1971,
+                    "handler_id": 342,
+                    "type": "http_response",
+                    "label": "HTTP 401 Unauthorized response (authentication required)",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/handler/handler.go:45:19",
+                    "function_name": "profiles",
+                    "description": "For POST requests without the X-User-ID header, the handler returns an HTTP unauthorized error response to the client.",
+                    "created_at": "2026-01-30T10:33:27.613693483Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1973,
+                    "handler_id": 342,
+                    "type": "http_response",
+                    "label": "HTTP error response (service error forwarded)",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/handler/handler.go:125:19",
+                    "function_name": "createProfile",
+                    "description": "If profileService.CreateProfile returns an error during creation, createProfile forwards that error as an HTTP error response to the client.",
+                    "created_at": "2026-01-30T10:33:27.619447036Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1982,
+                    "handler_id": 342,
+                    "type": "http_response",
+                    "label": "HTTP error response (service error forwarded) when listing",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/handler/handler.go:190:19",
+                    "function_name": "listProfiles",
+                    "description": "If profileService.ListProfiles (or the repository list call) returns an error, listProfiles forwards that as an HTTP error response to the client.",
+                    "created_at": "2026-01-30T10:33:27.631850344Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:32:26.004444544Z",
+            "updated_at": null
+        },
+        {
+            "id": 345,
+            "type": "http",
+            "method": "ANY",
+            "path": "/api/v1/profiles/",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "profileByID",
+            "source_function_id": "/home/evan/Code/rinder/services/profile/internal/handler/handler.go:28:19",
+            "function_id": "/home/evan/Code/rinder/services/profile/internal/handler/handler.go:85:19",
+            "outputs": [
+                {
+                    "id": 1989,
+                    "handler_id": 345,
+                    "type": "database",
+                    "label": "MongoDB CountDocuments({user_id: userID, name: name})",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/repository/profile_repository.go:206:29",
+                    "function_name": "ExistsByUserIDAndName",
+                    "description": "Check existence of a profile with the same user_id and name (used to detect duplicate names during UpdateProfile).",
+                    "created_at": "2026-01-30T10:33:42.706572319Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1994,
+                    "handler_id": 345,
+                    "type": "database",
+                    "label": "MongoDB DeleteOne({_id: id})",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/repository/profile_repository.go:113:29",
+                    "function_name": "Delete",
+                    "description": "Delete the profile document from MongoDB (performed by ProfileRepository.Delete during DeleteProfile).",
+                    "created_at": "2026-01-30T10:33:42.712419852Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1983,
+                    "handler_id": 345,
+                    "type": "database",
+                    "label": "MongoDB FindOne({_id: id})",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/repository/profile_repository.go:68:29",
+                    "function_name": "GetByID",
+                    "description": "Retrieve a profile document by its ID from the MongoDB profiles collection (used by ProfileRepository.GetByID).",
+                    "created_at": "2026-01-30T10:33:42.685736205Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1990,
+                    "handler_id": 345,
+                    "type": "database",
+                    "label": "MongoDB ReplaceOne({_id: profile.ID}, profile)",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/repository/profile_repository.go:97:29",
+                    "function_name": "Update",
+                    "description": "Replace the profile document in MongoDB with the updated profile (update operation during UpdateProfile).",
+                    "created_at": "2026-01-30T10:33:42.707672842Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1995,
+                    "handler_id": 345,
+                    "type": "event",
+                    "label": "Publish profile deleted event to Kafka (topic: TopicProfileDeleted)",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/service/profile_service.go:242:26",
+                    "function_name": "DeleteProfile",
+                    "description": "Asynchronously publish a ProfileDeletedEvent to Kafka with the profile ID as key (attempted after a successful profile deletion).",
+                    "created_at": "2026-01-30T10:33:42.714335085Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1991,
+                    "handler_id": 345,
+                    "type": "event",
+                    "label": "Publish profile updated event to Kafka (topic: TopicProfileUpdated)",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/service/profile_service.go:144:26",
+                    "function_name": "UpdateProfile",
+                    "description": "Asynchronously publish a ProfileUpdatedEvent to Kafka with the profile ID as key (attempted after a successful profile update).",
+                    "created_at": "2026-01-30T10:33:42.708762478Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1984,
+                    "handler_id": 345,
+                    "type": "http",
+                    "label": "GET /api/v1/media/profile/{profileID}",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/service/profile_service.go:291:26",
+                    "function_name": "fetchProfilePhotos",
+                    "description": "Outbound HTTP request to the Media Service to fetch photos for the profile (performed by the media client in fetchProfilePhotos).",
+                    "created_at": "2026-01-30T10:33:42.698574721Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1985,
+                    "handler_id": 345,
+                    "type": "http_response",
+                    "label": "HTTP 200 JSON response (OK) with profile",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/handler/handler.go:85:19",
+                    "function_name": "profileByID",
+                    "description": "Successful GET /api/v1/profiles/{id} returns the profile (including optional photos) to the client.",
+                    "created_at": "2026-01-30T10:33:42.701518792Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1992,
+                    "handler_id": 345,
+                    "type": "http_response",
+                    "label": "HTTP 200 JSON response (OK) with updated profile",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/handler/handler.go:141:19",
+                    "function_name": "updateProfile",
+                    "description": "On successful PUT update, the updated profile is returned to the client.",
+                    "created_at": "2026-01-30T10:33:42.709848115Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1996,
+                    "handler_id": 345,
+                    "type": "http_response",
+                    "label": "HTTP 204 No Content response on DELETE success",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/handler/handler.go:157:19",
+                    "function_name": "deleteProfile",
+                    "description": "On successful DELETE, the handler returns an HTTP 204 No Content response to the client.",
+                    "created_at": "2026-01-30T10:33:42.715979727Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1988,
+                    "handler_id": 345,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request (invalid JSON body) on PUT",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/handler/handler.go:141:19",
+                    "function_name": "updateProfile",
+                    "description": "If the request body for PUT cannot be decoded into the update request, a Bad Request HTTP response is returned.",
+                    "created_at": "2026-01-30T10:33:42.705567279Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1987,
+                    "handler_id": 345,
+                    "type": "http_response",
+                    "label": "HTTP 401 Unauthorized response (missing X-User-ID) for PUT/DELETE",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/handler/handler.go:85:19",
+                    "function_name": "profileByID",
+                    "description": "If the X-User-ID header is missing for PUT or DELETE requests, the handler returns an Unauthorized HTTP response to the client.",
+                    "created_at": "2026-01-30T10:33:42.704385828Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1997,
+                    "handler_id": 345,
+                    "type": "http_response",
+                    "label": "HTTP error response (response.Error) for DeleteProfile errors",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/handler/handler.go:157:19",
+                    "function_name": "deleteProfile",
+                    "description": "If DeleteProfile fails (ownership check, DB error, etc.), an appropriate error HTTP response is returned to the client.",
+                    "created_at": "2026-01-30T10:33:42.71755489Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1986,
+                    "handler_id": 345,
+                    "type": "http_response",
+                    "label": "HTTP error response (response.Error) for GET errors",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/handler/handler.go:85:19",
+                    "function_name": "profileByID",
+                    "description": "If retrieving the profile fails (e.g. not found or internal error), an error HTTP response is returned to the client.",
+                    "created_at": "2026-01-30T10:33:42.703011331Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1993,
+                    "handler_id": 345,
+                    "type": "http_response",
+                    "label": "HTTP error response (response.Error) for UpdateProfile errors",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/handler/handler.go:141:19",
+                    "function_name": "updateProfile",
+                    "description": "If UpdateProfile fails (ownership check, validation, DB error, etc.), an appropriate error HTTP response is returned to the client.",
+                    "created_at": "2026-01-30T10:33:42.710947328Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:32:26.010595066Z",
+            "updated_at": null
+        },
+        {
+            "id": 343,
+            "type": "http",
+            "method": "ANY",
+            "path": "/api/v1/profiles/me",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "myProfiles",
+            "source_function_id": "/home/evan/Code/rinder/services/profile/internal/handler/handler.go:28:19",
+            "function_id": "/home/evan/Code/rinder/services/profile/internal/handler/handler.go:64:19",
+            "outputs": [
+                {
+                    "id": 1942,
+                    "handler_id": 343,
+                    "type": "database",
+                    "label": "MongoDB Find on profiles collection with filter {user_id: userID}",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/repository/profile_repository.go:81:29",
+                    "function_name": "GetByUserID",
+                    "description": "The repository issues a MongoDB Find(ctx, bson.M{\"user_id\": userID}) against the profiles collection to locate documents for the given user_id.",
+                    "created_at": "2026-01-30T10:33:09.708305008Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1944,
+                    "handler_id": 343,
+                    "type": "database",
+                    "label": "MongoDB cursor Close (deferred)",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/repository/profile_repository.go:81:29",
+                    "function_name": "GetByUserID",
+                    "description": "The repository defers cursor.Close(ctx) to release server-side cursor resources once processing is complete.",
+                    "created_at": "2026-01-30T10:33:09.710278745Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1943,
+                    "handler_id": 343,
+                    "type": "database",
+                    "label": "MongoDB cursor.All to read and decode all profiles",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/repository/profile_repository.go:81:29",
+                    "function_name": "GetByUserID",
+                    "description": "The MongoDB cursor's All(ctx, \u0026profiles) is used to fetch all returned documents and decode them into the profiles slice (reads documents from the database/driver).",
+                    "created_at": "2026-01-30T10:33:09.70931099Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1946,
+                    "handler_id": 343,
+                    "type": "http_response",
+                    "label": "HTTP 200 OK JSON response with profiles (response.OK)",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/handler/handler.go:64:19",
+                    "function_name": "myProfiles",
+                    "description": "On success, the handler returns an HTTP 200 response containing the retrieved profiles payload to the client via response.OK.",
+                    "created_at": "2026-01-30T10:33:09.711979081Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1941,
+                    "handler_id": 343,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request response (method not allowed)",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/handler/handler.go:64:19",
+                    "function_name": "myProfiles",
+                    "description": "If the request method is not GET, the handler returns an HTTP 400 Bad Request response to the client via response.Error(errors.BadRequest).",
+                    "created_at": "2026-01-30T10:33:09.70708443Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1940,
+                    "handler_id": 343,
+                    "type": "http_response",
+                    "label": "HTTP 401 Unauthorized response",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/handler/handler.go:64:19",
+                    "function_name": "myProfiles",
+                    "description": "If the X-User-ID header is missing, the handler returns an HTTP 401 Unauthorized error response to the client via response.Error(errors.Unauthorized).",
+                    "created_at": "2026-01-30T10:33:09.704753122Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1945,
+                    "handler_id": 343,
+                    "type": "http_response",
+                    "label": "HTTP error response (response.Error with service error)",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/handler/handler.go:64:19",
+                    "function_name": "myProfiles",
+                    "description": "If profileService.GetUserProfiles (or underlying repository calls) returns an error, the handler forwards an error response to the client via response.Error; the exact HTTP status/body depends on the error wrapped/returned.",
+                    "created_at": "2026-01-30T10:33:09.711136556Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:32:26.006624071Z",
+            "updated_at": null
+        },
+        {
+            "id": 344,
+            "type": "http",
+            "method": "ANY",
+            "path": "/api/v1/profiles/user/",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "profilesByUserID",
+            "source_function_id": "/home/evan/Code/rinder/services/profile/internal/handler/handler.go:28:19",
+            "function_id": "/home/evan/Code/rinder/services/profile/internal/handler/handler.go:166:19",
+            "outputs": [
+                {
+                    "id": 1928,
+                    "handler_id": 344,
+                    "type": "database",
+                    "label": "MongoDB Find on profiles collection (filter: {\"user_id\": \u003cuserID\u003e})",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/repository/profile_repository.go:81:29",
+                    "function_name": "GetByUserID",
+                    "description": "The repository issues a MongoDB collection.Find(ctx, bson.M{\"user_id\": userID}) to retrieve documents for the given user ID; a cursor is returned and its results are decoded into a slice of profiles.",
+                    "created_at": "2026-01-30T10:33:02.85633985Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1930,
+                    "handler_id": 344,
+                    "type": "http_response",
+                    "label": "HTTP 200 JSON response with profiles",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/handler/handler.go:166:19",
+                    "function_name": "profilesByUserID",
+                    "description": "On success, the handler writes an HTTP 200 OK response to the client containing the JSON-encoded list of profiles returned from the repository.",
+                    "created_at": "2026-01-30T10:33:02.858924691Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1926,
+                    "handler_id": 344,
+                    "type": "http_response",
+                    "label": "HTTP 400 error response (method not allowed)",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/handler/handler.go:166:19",
+                    "function_name": "profilesByUserID",
+                    "description": "If the incoming request method is not GET, the handler writes an HTTP error response (Bad Request / method not allowed) to the client.",
+                    "created_at": "2026-01-30T10:33:02.851898962Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1927,
+                    "handler_id": 344,
+                    "type": "http_response",
+                    "label": "HTTP 400 error response (user ID is required)",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/handler/handler.go:166:19",
+                    "function_name": "profilesByUserID",
+                    "description": "If the user ID path segment is empty, the handler writes an HTTP error response (Bad Request / user ID required) to the client.",
+                    "created_at": "2026-01-30T10:33:02.85466075Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1929,
+                    "handler_id": 344,
+                    "type": "http_response",
+                    "label": "HTTP error response (propagated repository/service error)",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/handler/handler.go:166:19",
+                    "function_name": "profilesByUserID",
+                    "description": "If the profile repository/service returns an error (for example, if the MongoDB Find or decode fails), the handler writes an error HTTP response to the client (the repository wraps the error as an internal server error; the handler passes that error to the response helper).",
+                    "created_at": "2026-01-30T10:33:02.857646531Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:32:26.008677053Z",
+            "updated_at": null
+        },
+        {
+            "id": 341,
+            "type": "http",
+            "method": "ANY",
+            "path": "/health",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "healthCheck",
+            "source_function_id": "/home/evan/Code/rinder/services/profile/internal/handler/handler.go:28:19",
+            "function_id": "/home/evan/Code/rinder/services/profile/internal/handler/handler.go:39:19",
+            "outputs": [
+                {
+                    "id": 1896,
+                    "handler_id": 341,
+                    "type": "http_response",
+                    "label": "HTTP 200 JSON response",
+                    "function_id": "/home/evan/Code/rinder/services/profile/internal/handler/handler.go:39:19",
+                    "function_name": "healthCheck",
+                    "description": "An HTTP response is returned to the client with status code 200, Content-Type set to application/json, and the JSON body {\"status\":\"healthy\",\"service\":\"profile\"}.",
+                    "created_at": "2026-01-30T10:32:46.387940493Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:32:25.990264495Z",
+            "updated_at": null
+        },
+        {
+            "id": 346,
+            "type": "kafka",
+            "method": "",
+            "path": "user.created",
+            "source_function_name": "NewUserEventConsumer",
+            "function_name": "handleUserCreated",
+            "source_function_id": "/home/evan/Code/rinder/services/profile/internal/consumer/user_consumer.go:28:6",
+            "function_id": "/home/evan/Code/rinder/services/profile/internal/consumer/user_consumer.go:51:29",
+            "outputs": [],
+            "created_at": "2026-01-30T10:32:26.012300933Z",
+            "updated_at": null
+        }
+    ]
+}

@@ -1,0 +1,640 @@
+{
+    "id": 15,
+    "name": "service-user",
+    "git_repo_url": "/home/evan/Code/rinder/services/user",
+    "entrypoint_path": "cmd/main.go",
+    "entrypoint_function": "main",
+    "git_org_url": "github.com/rinder",
+    "git_commit": null,
+    "created_at": "2026-01-21T10:24:51.1652729Z",
+    "updated_at": "2026-01-21T10:24:53.618656084Z",
+    "status": "analyzing-completed",
+    "handlers": [
+        {
+            "id": 291,
+            "type": "http",
+            "method": "GET",
+            "path": "/api/v1/users/",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "userByID",
+            "source_function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:26:19",
+            "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:144:19",
+            "outputs": [
+                {
+                    "id": 1648,
+                    "handler_id": 291,
+                    "type": "database",
+                    "label": "SELECT id, email, password_hash, first_name, last_name, status, created_at, updated_at FROM users WHERE id = $1",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/repository/user_repository.go:51:26",
+                    "function_name": "GetByID",
+                    "description": "When a GET request is received with a non-empty user ID, the repository executes a QueryRowContext with the above SELECT to retrieve the user row by id (parameter: the requested user ID).",
+                    "created_at": "2026-01-30T10:26:07.368602399Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1651,
+                    "handler_id": 291,
+                    "type": "http_response",
+                    "label": "HTTP 200 OK with user payload (response.OK)",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:144:19",
+                    "function_name": "userByID",
+                    "description": "If the repository successfully returns the user row, the handler returns an HTTP 200 OK response with the user data (the user object provided to response.OK).",
+                    "created_at": "2026-01-30T10:26:07.372270646Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1646,
+                    "handler_id": 291,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request (user ID is required)",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:144:19",
+                    "function_name": "userByID",
+                    "description": "If the path does not contain a user ID (empty path segment after /api/v1/users/), the handler returns an HTTP error response indicating the user ID is required.",
+                    "created_at": "2026-01-30T10:26:07.351526566Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1649,
+                    "handler_id": 291,
+                    "type": "http_response",
+                    "label": "HTTP 404 Not Found (user not found)",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:144:19",
+                    "function_name": "userByID",
+                    "description": "If the database query returns no rows for the given id, the repository returns a NotFound error which the handler translates to an HTTP error response indicating the user was not found.",
+                    "created_at": "2026-01-30T10:26:07.370083815Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1647,
+                    "handler_id": 291,
+                    "type": "http_response",
+                    "label": "HTTP 405 Method Not Allowed",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:144:19",
+                    "function_name": "userByID",
+                    "description": "If the incoming request method is not GET, the handler returns an HTTP method-not-allowed error response.",
+                    "created_at": "2026-01-30T10:26:07.366695693Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1650,
+                    "handler_id": 291,
+                    "type": "http_response",
+                    "label": "HTTP 500 Internal Server Error (query/other internal error)",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:144:19",
+                    "function_name": "userByID",
+                    "description": "If the database query or repository returns any other (internal) error, the handler returns an HTTP internal-server-error response to the client.",
+                    "created_at": "2026-01-30T10:26:07.371209228Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:25:26.075007333Z",
+            "updated_at": null
+        },
+        {
+            "id": 289,
+            "type": "http",
+            "method": "GET",
+            "path": "/api/v1/users/me",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "me",
+            "source_function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:26:19",
+            "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:109:19",
+            "outputs": [
+                {
+                    "id": 1682,
+                    "handler_id": 289,
+                    "type": "database",
+                    "label": "SELECT id, email, password_hash, first_name, last_name, status, created_at, updated_at FROM users WHERE id = $1",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/repository/user_repository.go:51:26",
+                    "function_name": "GetByID",
+                    "description": "Query the users table for a user by ID (used by both GetUser and UpdateUser flows). Executed via QueryRowContext and Scan to retrieve a single user record.",
+                    "created_at": "2026-01-30T10:26:16.190891252Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1685,
+                    "handler_id": 289,
+                    "type": "database",
+                    "label": "UPDATE users SET first_name = $1, last_name = $2, updated_at = $3 WHERE id = $4",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/repository/user_repository.go:111:26",
+                    "function_name": "Update",
+                    "description": "Update the user's first_name, last_name and updated_at in the users table. Executed via ExecContext in the Update repository method during the PUT /me flow.",
+                    "created_at": "2026-01-30T10:26:16.194407014Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1686,
+                    "handler_id": 289,
+                    "type": "event",
+                    "label": "Publish user updated event to Kafka (PublishWithKey on kafka.TopicUserUpdated, key = user.ID, event = kafka.EventUserUpdated)",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/service/user_service.go:206:23",
+                    "function_name": "UpdateUser",
+                    "description": "After a successful user update (PUT /me), the service publishes a UserUpdatedEvent to Kafka using the configured producer.",
+                    "created_at": "2026-01-30T10:26:16.195393182Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1687,
+                    "handler_id": 289,
+                    "type": "http_response",
+                    "label": "HTTP 200 OK response (response.OK with updated user)",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:109:19",
+                    "function_name": "me",
+                    "description": "When PUT /me succeeds (user updated), the handler returns an HTTP 200 response with the updated user object to the client.",
+                    "created_at": "2026-01-30T10:26:16.196307319Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1683,
+                    "handler_id": 289,
+                    "type": "http_response",
+                    "label": "HTTP 200 OK response (response.OK with user)",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:109:19",
+                    "function_name": "me",
+                    "description": "When GET /me succeeds, the handler returns an HTTP 200 response with the user object to the client.",
+                    "created_at": "2026-01-30T10:26:16.192330724Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1681,
+                    "handler_id": 289,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request response (response.Error for invalid request body)",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:109:19",
+                    "function_name": "me",
+                    "description": "When the request is PUT and the request body cannot be decoded as the expected JSON, the handler returns a bad-request error response to the client.",
+                    "created_at": "2026-01-30T10:26:16.189598337Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1679,
+                    "handler_id": 289,
+                    "type": "http_response",
+                    "label": "HTTP 401 Unauthorized response (response.Error with unauthorizedError)",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:109:19",
+                    "function_name": "me",
+                    "description": "If the X-User-ID header is missing, the handler returns an unauthorized error response to the client and stops processing.",
+                    "created_at": "2026-01-30T10:26:16.183636932Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1680,
+                    "handler_id": 289,
+                    "type": "http_response",
+                    "label": "HTTP 405 Method Not Allowed response (response.Error with methodNotAllowedError)",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:109:19",
+                    "function_name": "me",
+                    "description": "If the request method is not GET or PUT, the handler returns a method-not-allowed error response to the client.",
+                    "created_at": "2026-01-30T10:26:16.188172762Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1684,
+                    "handler_id": 289,
+                    "type": "http_response",
+                    "label": "HTTP error response for NotFound (response.Error with NotFound)",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:109:19",
+                    "function_name": "me",
+                    "description": "If the repository returns a NotFound error (no user row) in either GET or PUT flows, the handler returns an appropriate NotFound error HTTP response to the client.",
+                    "created_at": "2026-01-30T10:26:16.193493962Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1688,
+                    "handler_id": 289,
+                    "type": "http_response",
+                    "label": "HTTP error response for repository/service errors (response.Error)",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:109:19",
+                    "function_name": "me",
+                    "description": "If any repository or service call returns an error (database error, internal error, etc.) during GET or PUT flows, the handler returns an error HTTP response to the client reflecting that error.",
+                    "created_at": "2026-01-30T10:26:16.197221453Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:25:26.073007805Z",
+            "updated_at": null
+        },
+        {
+            "id": 285,
+            "type": "http",
+            "method": "GET",
+            "path": "/health",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "healthCheck",
+            "source_function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:26:19",
+            "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:40:19",
+            "outputs": [
+                {
+                    "id": 1600,
+                    "handler_id": 285,
+                    "type": "http_response",
+                    "label": "HTTP 200 JSON response",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:40:19",
+                    "function_name": "healthCheck",
+                    "description": "The handler writes an HTTP 200 response with Content-Type 'application/json' and body '{\"status\":\"healthy\",\"service\":\"user\"}' to the client.",
+                    "created_at": "2026-01-30T10:25:38.95436803Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:25:26.052036314Z",
+            "updated_at": null
+        },
+        {
+            "id": 287,
+            "type": "http",
+            "method": "POST",
+            "path": "/api/v1/auth/login",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "login",
+            "source_function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:26:19",
+            "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:67:19",
+            "outputs": [
+                {
+                    "id": 1654,
+                    "handler_id": 287,
+                    "type": "database",
+                    "label": "SELECT id, email, password_hash, first_name, last_name, status, created_at, updated_at FROM users WHERE email = $1",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/repository/user_repository.go:81:26",
+                    "function_name": "GetByEmail",
+                    "description": "A database query is executed to fetch the user row by email (GetByEmail). This happens during login to retrieve the stored user record and password hash.",
+                    "created_at": "2026-01-30T10:26:09.894452512Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1658,
+                    "handler_id": 287,
+                    "type": "http_response",
+                    "label": "HTTP 200 OK JSON response (AuthResponse with access token, refresh token, expires_in and user)",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:67:19",
+                    "function_name": "login",
+                    "description": "On successful authentication (password verified and user active), the service generates access and refresh tokens and the handler returns an HTTP 200 response containing the AuthResponse JSON payload (access token, refresh token, expires_in, and user info).",
+                    "created_at": "2026-01-30T10:26:09.900121001Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1653,
+                    "handler_id": 287,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request response (invalid JSON body)",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:67:19",
+                    "function_name": "login",
+                    "description": "If the request body cannot be decoded as the expected LoginRequest JSON, the handler returns an HTTP 400 Bad Request error response.",
+                    "created_at": "2026-01-30T10:26:09.891375112Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1655,
+                    "handler_id": 287,
+                    "type": "http_response",
+                    "label": "HTTP 401 Unauthorized response (invalid credentials)",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:67:19",
+                    "function_name": "login",
+                    "description": "If no user is found for the provided email or the password comparison fails, the service returns an invalid credentials error which the handler sends back as an HTTP unauthorized response.",
+                    "created_at": "2026-01-30T10:26:09.8961419Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1656,
+                    "handler_id": 287,
+                    "type": "http_response",
+                    "label": "HTTP 403 Forbidden response (user account not active)",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:67:19",
+                    "function_name": "login",
+                    "description": "If the retrieved user's status is not active, the service returns a forbidden error which the handler sends back as an HTTP 403 Forbidden response.",
+                    "created_at": "2026-01-30T10:26:09.89755021Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1652,
+                    "handler_id": 287,
+                    "type": "http_response",
+                    "label": "HTTP 405 Method Not Allowed response",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:67:19",
+                    "function_name": "login",
+                    "description": "If the incoming HTTP request method is not POST, the handler returns an HTTP error response indicating method not allowed.",
+                    "created_at": "2026-01-30T10:26:09.878168411Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1657,
+                    "handler_id": 287,
+                    "type": "http_response",
+                    "label": "HTTP 500 Internal Server Error response (database or token generation failure)",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:67:19",
+                    "function_name": "login",
+                    "description": "If an unexpected database error occurs (other than not found), or if token generation fails, the service wraps and returns an internal server error which the handler sends as an HTTP 500 response.",
+                    "created_at": "2026-01-30T10:26:09.898974984Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:25:26.069852388Z",
+            "updated_at": null
+        },
+        {
+            "id": 288,
+            "type": "http",
+            "method": "POST",
+            "path": "/api/v1/auth/refresh",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "refresh",
+            "source_function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:26:19",
+            "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:88:19",
+            "outputs": [
+                {
+                    "id": 1703,
+                    "handler_id": 288,
+                    "type": "database",
+                    "label": "SELECT id, email, password_hash, first_name, last_name, status, created_at, updated_at FROM users WHERE id = $1",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/repository/user_repository.go:51:26",
+                    "function_name": "GetByID",
+                    "description": "The user record is retrieved from the database by ID (repo.GetByID executes this query using QueryRowContext and Scan).",
+                    "created_at": "2026-01-30T10:26:19.222049105Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1711,
+                    "handler_id": 288,
+                    "type": "http_response",
+                    "label": "HTTP 200 JSON response with new access and refresh tokens",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:88:19",
+                    "function_name": "refresh",
+                    "description": "On success, the handler returns an HTTP 200 response with a JSON body containing accessToken, refreshToken and expiresIn (model.RefreshResponse) via response.OK.",
+                    "created_at": "2026-01-30T10:26:19.235125441Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1699,
+                    "handler_id": 288,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request (invalid request body)",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:88:19",
+                    "function_name": "refresh",
+                    "description": "If the request body cannot be decoded as JSON into model.RefreshRequest, the handler returns an HTTP 400 response to the client via response.Error.",
+                    "created_at": "2026-01-30T10:26:19.214322876Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1697,
+                    "handler_id": 288,
+                    "type": "http_response",
+                    "label": "HTTP 405 Method Not Allowed",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:88:19",
+                    "function_name": "refresh",
+                    "description": "If the incoming request method is not POST, the handler returns an HTTP 405 response to the client via response.Error.",
+                    "created_at": "2026-01-30T10:26:19.198690981Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1709,
+                    "handler_id": 288,
+                    "type": "http_response",
+                    "label": "HTTP error response (various status codes)",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:88:19",
+                    "function_name": "refresh",
+                    "description": "If userService.RefreshToken returns an error (validation error for missing refresh token, token validation failure, user not found, user not active -\u003e forbidden, or internal errors from token generation or DB), the handler returns an appropriate HTTP error response to the client via response.Error.",
+                    "created_at": "2026-01-30T10:26:19.232165262Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1705,
+                    "handler_id": 288,
+                    "type": "other",
+                    "label": "jwtAuth.GenerateAccessToken(user.ID, user.Email, ttl)",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/service/user_service.go:161:23",
+                    "function_name": "RefreshToken",
+                    "description": "A new access token is generated using the injected jwtAuth dependency. If generation fails, an internal error is returned and the handler returns an HTTP error.",
+                    "created_at": "2026-01-30T10:26:19.22587269Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1707,
+                    "handler_id": 288,
+                    "type": "other",
+                    "label": "jwtAuth.GenerateRefreshToken(user.ID, user.Email, ttl)",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/service/user_service.go:161:23",
+                    "function_name": "RefreshToken",
+                    "description": "A new refresh token is generated using the injected jwtAuth dependency. If generation fails, an internal error is returned and the handler returns an HTTP error.",
+                    "created_at": "2026-01-30T10:26:19.229149986Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1701,
+                    "handler_id": 288,
+                    "type": "other",
+                    "label": "jwtAuth.ValidateToken(refreshToken)",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/service/user_service.go:161:23",
+                    "function_name": "RefreshToken",
+                    "description": "The provided refresh token is validated using the injected jwtAuth dependency (token parsing/verification). If validation fails, an error is returned and the handler ultimately returns an HTTP error.",
+                    "created_at": "2026-01-30T10:26:19.218468596Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:25:26.071798848Z",
+            "updated_at": null
+        },
+        {
+            "id": 286,
+            "type": "http",
+            "method": "POST",
+            "path": "/api/v1/auth/signup",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "signup",
+            "source_function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:26:19",
+            "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:46:19",
+            "outputs": [
+                {
+                    "id": 1693,
+                    "handler_id": 286,
+                    "type": "database",
+                    "label": "INSERT INTO users (...) VALUES (...)",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/repository/user_repository.go:23:26",
+                    "function_name": "Create",
+                    "description": "Insert a new user row into the users table (performed via ExecContext).",
+                    "created_at": "2026-01-30T10:26:17.872793723Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1692,
+                    "handler_id": 286,
+                    "type": "database",
+                    "label": "SELECT EXISTS(SELECT 1 FROM users WHERE email = $1)",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/repository/user_repository.go:164:26",
+                    "function_name": "ExistsByEmail",
+                    "description": "Check whether a user with the provided email already exists in the users table (performed via QueryRowContext).",
+                    "created_at": "2026-01-30T10:26:17.871692019Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1694,
+                    "handler_id": 286,
+                    "type": "event",
+                    "label": "Publish user created event to Kafka (PublishWithKey to kafka.TopicUserCreated)",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/service/user_service.go:45:23",
+                    "function_name": "Signup",
+                    "description": "Asynchronously publish a UserCreatedEvent to Kafka using the user's ID as the message key (attempted after successful user creation). Errors from publishing are logged but do not fail the signup request.",
+                    "created_at": "2026-01-30T10:26:17.873857397Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1695,
+                    "handler_id": 286,
+                    "type": "http_response",
+                    "label": "HTTP 201 Created response (response.Created) with AuthResponse payload",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:46:19",
+                    "function_name": "signup",
+                    "description": "On successful signup (user created, tokens generated), the handler returns an HTTP 201 Created response containing the AuthResponse (access token, refresh token, expires_in, user data).",
+                    "created_at": "2026-01-30T10:26:17.875012081Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1690,
+                    "handler_id": 286,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request response (response.Error) for invalid JSON body",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:46:19",
+                    "function_name": "signup",
+                    "description": "If the request body cannot be decoded as the expected signup JSON, the handler returns an HTTP error response indicating a bad request / invalid request body.",
+                    "created_at": "2026-01-30T10:26:17.86914358Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1689,
+                    "handler_id": 286,
+                    "type": "http_response",
+                    "label": "HTTP 405 Method Not Allowed response (response.Error)",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:46:19",
+                    "function_name": "signup",
+                    "description": "If the incoming HTTP request method is not POST, the handler returns an HTTP error response indicating the method is not allowed.",
+                    "created_at": "2026-01-30T10:26:17.866125646Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1691,
+                    "handler_id": 286,
+                    "type": "http_response",
+                    "label": "HTTP error response (response.Error) for service-level errors",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:46:19",
+                    "function_name": "signup",
+                    "description": "If UserService.Signup returns an error (validation errors, user already exists, token generation failure, DB errors, etc.), the handler forwards that error to response.Error which returns an appropriate HTTP error response to the client.",
+                    "created_at": "2026-01-30T10:26:17.870607429Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:25:26.066537619Z",
+            "updated_at": null
+        },
+        {
+            "id": 290,
+            "type": "http",
+            "method": "PUT",
+            "path": "/api/v1/users/me",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "me",
+            "source_function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:26:19",
+            "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:109:19",
+            "outputs": [
+                {
+                    "id": 1780,
+                    "handler_id": 290,
+                    "type": "database",
+                    "label": "SELECT id, email, password_hash, first_name, last_name, status, created_at, updated_at FROM users WHERE id = $1",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/repository/user_repository.go:51:26",
+                    "function_name": "GetByID",
+                    "description": "Retrieve a user row by ID from the users table (used by GetUser and by UpdateUser to load the existing user).",
+                    "created_at": "2026-01-30T10:26:29.762841394Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1786,
+                    "handler_id": 290,
+                    "type": "database",
+                    "label": "UPDATE users SET first_name = $1, last_name = $2, updated_at = $3 WHERE id = $4",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/repository/user_repository.go:111:26",
+                    "function_name": "Update",
+                    "description": "Update the user's first_name, last_name and updated_at in the users table (performed during PUT /me on successful validation).",
+                    "created_at": "2026-01-30T10:26:29.768329955Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1788,
+                    "handler_id": 290,
+                    "type": "event",
+                    "label": "Publish UserUpdatedEvent to Kafka (TopicUserUpdated) with key = user.ID",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/service/user_service.go:206:23",
+                    "function_name": "UpdateUser",
+                    "description": "After a successful user update, the service publishes a UserUpdatedEvent to Kafka using producer.PublishWithKey (this is best-effort; failures are logged but do not change the returned response).",
+                    "created_at": "2026-01-30T10:26:29.770224061Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1790,
+                    "handler_id": 290,
+                    "type": "http_response",
+                    "label": "HTTP 200 JSON response (updated user) — PUT /me",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:109:19",
+                    "function_name": "me",
+                    "description": "On successful PUT (user fetched, updated in DB, and after attempting to publish event), the handler returns an HTTP 200 response containing the updated user object.",
+                    "created_at": "2026-01-30T10:26:29.772401225Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1782,
+                    "handler_id": 290,
+                    "type": "http_response",
+                    "label": "HTTP 200 JSON response (user object) — GET /me",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:109:19",
+                    "function_name": "me",
+                    "description": "On successful GET, the handler returns an HTTP 200 response containing the user object.",
+                    "created_at": "2026-01-30T10:26:29.764432796Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1778,
+                    "handler_id": 290,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request response (invalid JSON body)",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:109:19",
+                    "function_name": "me",
+                    "description": "If JSON decoding of the PUT request body fails, the handler returns a bad-request error response to the client.",
+                    "created_at": "2026-01-30T10:26:29.760673976Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1774,
+                    "handler_id": 290,
+                    "type": "http_response",
+                    "label": "HTTP 401 Unauthorized response",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:109:19",
+                    "function_name": "me",
+                    "description": "If the X-User-ID header is missing, the handler returns an unauthorized error response to the client.",
+                    "created_at": "2026-01-30T10:26:29.743863099Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1776,
+                    "handler_id": 290,
+                    "type": "http_response",
+                    "label": "HTTP 405 Method Not Allowed response",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:109:19",
+                    "function_name": "me",
+                    "description": "If the HTTP method is not GET or PUT, the handler returns a method-not-allowed error response to the client.",
+                    "created_at": "2026-01-30T10:26:29.75665336Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1784,
+                    "handler_id": 290,
+                    "type": "http_response",
+                    "label": "HTTP error response (returned to client) — GetUser or UpdateUser failure",
+                    "function_id": "/home/evan/Code/rinder/services/user/internal/handler/handler.go:109:19",
+                    "function_name": "me",
+                    "description": "If userService.GetUser or userService.UpdateUser returns an error (for example internal error or not-found), the handler forwards an error response to the client via response.Error.",
+                    "created_at": "2026-01-30T10:26:29.766264515Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:25:26.074174223Z",
+            "updated_at": null
+        }
+    ]
+}

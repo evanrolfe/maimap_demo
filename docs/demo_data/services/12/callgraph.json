@@ -1,0 +1,1175 @@
+{
+    "nodes": [
+        {
+            "code": "func main() {\n\t// Load configuration\n\tcfg := config.NewServiceConfig(\"media\", 8086)\n\tkafkaCfg := config.NewKafkaConfig(\"media-service\")\n\n\t// Database configuration (postgres-media container uses port 5434)\n\tdbCfg := config.DatabaseConfig{\n\t\tHost:     config.GetEnv(\"MEDIA_DB_HOST\", \"localhost\"),\n\t\tPort:     config.GetEnvInt(\"MEDIA_DB_PORT\", 5434),\n\t\tUser:     config.GetEnv(\"MEDIA_DB_USER\", \"rinder\"),\n\t\tPassword: config.GetEnv(\"MEDIA_DB_PASSWORD\", \"rinder123\"),\n\t\tDatabase: config.GetEnv(\"MEDIA_DB_NAME\", \"rinder_media\"),\n\t\tSSLMode:  config.GetEnv(\"MEDIA_DB_SSLMODE\", \"disable\"),\n\t}\n\n\t// MinIO configuration\n\tminioEndpoint := config.GetEnv(\"MINIO_ENDPOINT\", \"localhost:9000\")\n\tminioAccessKey := config.GetEnv(\"MINIO_ACCESS_KEY\", \"rinder\")\n\tminioSecretKey := config.GetEnv(\"MINIO_SECRET_KEY\", \"rinder123\")\n\tminioBucket := config.GetEnv(\"MINIO_BUCKET\", \"service-media\")\n\tminioPublicURL := config.GetEnv(\"MINIO_PUBLIC_URL\", \"http://localhost:9000\")\n\n\t// Service URLs for cross-service calls\n\tprofileServiceURL := config.GetEnv(\"PROFILE_SERVICE_URL\", \"http://localhost:8082\")\n\tuserServiceURL := config.GetEnv(\"USER_SERVICE_URL\", \"http://localhost:8081\")\n\n\t// Initialize logger\n\tlogger.Init(cfg.Name, cfg.LogLevel)\n\tlogger.Info(\"starting media service\",\n\t\tzap.Int(\"port\", cfg.Port),\n\t\tzap.String(\"environment\", cfg.Environment),\n\t)\n\n\t// Connect to PostgreSQL\n\tdsn := fmt.Sprintf(\"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s\",\n\t\tdbCfg.Host, dbCfg.Port, dbCfg.User, dbCfg.Password, dbCfg.Database, dbCfg.SSLMode)\n\n\tdb, err := sql.Open(\"postgres\", dsn)\n\tif err != nil {\n\t\tlogger.Fatal(\"failed to connect to postgres\", zap.Error(err))\n\t}\n\tdefer db.Close()\n\n\tif err = db.Ping(); err != nil {\n\t\tlogger.Fatal(\"failed to ping postgres\", zap.Error(err))\n\t}\n\tlogger.Info(\"connected to postgres database\")\n\n\t// Initialize MinIO storage\n\tminioStorage, err := storage.NewMinioStorage(storage.MinioConfig{\n\t\tEndpoint:        minioEndpoint,\n\t\tAccessKeyID:     minioAccessKey,\n\t\tSecretAccessKey: minioSecretKey,\n\t\tUseSSL:          false,\n\t\tBucketName:      minioBucket,\n\t\tPublicURL:       minioPublicURL,\n\t})\n\tif err != nil {\n\t\tlogger.Fatal(\"failed to initialize minio storage\", zap.Error(err))\n\t}\n\tlogger.Info(\"connected to minio storage\", zap.String(\"bucket\", minioBucket))\n\n\t// Initialize Kafka producer\n\tproducer := kafka.NewProducer(kafkaCfg.Brokers, cfg.Name)\n\tdefer producer.Close()\n\n\t// Initialize repository\n\tmediaRepo := repository.NewMediaRepository(db)\n\n\t// Run migrations\n\tif err := mediaRepo.CreateSchema(context.Background()); err != nil {\n\t\tlogger.Fatal(\"failed to run database migrations\", zap.Error(err))\n\t}\n\tlogger.Info(\"database migrations completed\")\n\n\t// Initialize service with cross-service clients\n\tmediaService := service.NewMediaService(\n\t\tmediaRepo,\n\t\tminioStorage,\n\t\tproducer,\n\t\tprofileServiceURL,\n\t\tuserServiceURL,\n\t)\n\tlogger.Info(\"media service initialized with cross-service clients\",\n\t\tzap.String(\"profile_service\", profileServiceURL),\n\t\tzap.String(\"user_service\", userServiceURL),\n\t)\n\n\t// Initialize handler\n\th := handler.NewHandler(mediaService)\n\n\t// Setup routes\n\tmux := http.NewServeMux()\n\th.RegisterRoutes(mux)\n\n\t// Apply middleware\n\tvar httpHandler http.Handler = mux\n\thttpHandler = middleware.Logging(httpHandler)\n\thttpHandler = middleware.Recovery(httpHandler)\n\n\t// Create server\n\tserver := \u0026http.Server{\n\t\tAddr:         fmt.Sprintf(\":%d\", cfg.Port),\n\t\tHandler:      httpHandler,\n\t\tReadTimeout:  30 * time.Second, // Longer timeout for uploads\n\t\tWriteTimeout: 30 * time.Second,\n\t\tIdleTimeout:  60 * time.Second,\n\t}\n\n\t// Start server\n\tgo func() {\n\t\tlogger.Info(\"media service listening\", zap.String(\"addr\", server.Addr))\n\t\tif err := server.ListenAndServe(); err != nil \u0026\u0026 err != http.ErrServerClosed {\n\t\t\tlogger.Fatal(\"failed to start server\", zap.Error(err))\n\t\t}\n\t}()\n\n\t// Wait for interrupt signal\n\tquit := make(chan os.Signal, 1)\n\tsignal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)\n\t\u003c-quit\n\n\tlogger.Info(\"shutting down server...\")\n\n\t// Graceful shutdown\n\tctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)\n\tdefer cancel()\n\n\tif err := server.Shutdown(ctx); err != nil {\n\t\tlogger.Fatal(\"server forced to shutdown\", zap.Error(err))\n\t}\n\n\tlogger.Info(\"server exited properly\")\n}",
+            "external": "false",
+            "id": "/home/evan/Code/rinder/services/media/cmd/main.go:25:1",
+            "name": "ROOT",
+            "node_type": "function"
+        },
+        {
+            "code": "func NewMinioStorage(cfg MinioConfig) (*MinioStorage, error) {\n\tclient, err := minio.New(cfg.Endpoint, \u0026minio.Options{\n\t\tCreds:  credentials.NewStaticV4(cfg.AccessKeyID, cfg.SecretAccessKey, \"\"),\n\t\tSecure: cfg.UseSSL,\n\t})\n\tif err != nil {\n\t\treturn nil, fmt.Errorf(\"failed to create minio client: %w\", err)\n\t}\n\n\tstorage := \u0026MinioStorage{\n\t\tclient:     client,\n\t\tbucketName: cfg.BucketName,\n\t\tpublicURL:  cfg.PublicURL,\n\t}\n\n\t// Ensure bucket exists\n\tif err := storage.ensureBucket(context.Background()); err != nil {\n\t\treturn nil, err\n\t}\n\n\treturn storage, nil\n}",
+            "external": "false",
+            "id": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:33:6",
+            "name": "NewMinioStorage",
+            "node_type": "function"
+        },
+        {
+            "code": "func (s *MinioStorage) ensureBucket(ctx context.Context) error {\n\texists, err := s.client.BucketExists(ctx, s.bucketName)\n\tif err != nil {\n\t\treturn fmt.Errorf(\"failed to check bucket existence: %w\", err)\n\t}\n\n\tif !exists {\n\t\terr = s.client.MakeBucket(ctx, s.bucketName, minio.MakeBucketOptions{})\n\t\tif err != nil {\n\t\t\treturn fmt.Errorf(\"failed to create bucket: %w\", err)\n\t\t}\n\t\tlogger.Info(\"created minio bucket\", zap.String(\"bucket\", s.bucketName))\n\n\t\t// Set bucket policy to allow public read access\n\t\tpolicy := fmt.Sprintf(`{\n\t\t\t\"Version\": \"2012-10-17\",\n\t\t\t\"Statement\": [\n\t\t\t\t{\n\t\t\t\t\t\"Effect\": \"Allow\",\n\t\t\t\t\t\"Principal\": {\"AWS\": [\"*\"]},\n\t\t\t\t\t\"Action\": [\"s3:GetObject\"],\n\t\t\t\t\t\"Resource\": [\"arn:aws:s3:::%s/*\"]\n\t\t\t\t}\n\t\t\t]\n\t\t}`, s.bucketName)\n\n\t\terr = s.client.SetBucketPolicy(ctx, s.bucketName, policy)\n\t\tif err != nil {\n\t\t\tlogger.Warn(\"failed to set bucket policy\", zap.Error(err))\n\t\t}\n\t}\n\n\treturn nil\n}",
+            "external": "false",
+            "id": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:57:24",
+            "name": "ensureBucket",
+            "node_type": "function"
+        },
+        {
+            "code": "func NewMediaRepository(db *sql.DB) *MediaRepository {\n\treturn \u0026MediaRepository{db: db}\n}",
+            "external": "false",
+            "id": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:19:6",
+            "name": "NewMediaRepository",
+            "node_type": "function"
+        },
+        {
+            "code": "func (r *MediaRepository) CreateSchema(ctx context.Context) error {\n\tquery := `\n\tCREATE TABLE IF NOT EXISTS media (\n\t\tid UUID PRIMARY KEY,\n\t\tprofile_id UUID NOT NULL,\n\t\tuser_id UUID NOT NULL,\n\t\ttype VARCHAR(20) NOT NULL DEFAULT 'image',\n\t\tfilename VARCHAR(255) NOT NULL,\n\t\tcontent_type VARCHAR(100) NOT NULL,\n\t\tsize BIGINT NOT NULL,\n\t\turl TEXT NOT NULL,\n\t\tthumbnail_url TEXT,\n\t\tis_primary BOOLEAN NOT NULL DEFAULT FALSE,\n\t\tsort_order INT NOT NULL DEFAULT 0,\n\t\tcreated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),\n\t\tupdated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()\n\t);\n\n\tCREATE INDEX IF NOT EXISTS idx_media_profile_id ON media(profile_id);\n\tCREATE INDEX IF NOT EXISTS idx_media_user_id ON media(user_id);\n\t`\n\t_, err := r.db.ExecContext(ctx, query)\n\tif err != nil {\n\t\treturn errors.Wrap(err, errors.CodeInternalServerError, \"failed to create media table\", 500)\n\t}\n\treturn nil\n}",
+            "external": "false",
+            "id": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:24:27",
+            "name": "CreateSchema",
+            "node_type": "function"
+        },
+        {
+            "code": "func NewMediaService(\n\tmediaRepo *repository.MediaRepository,\n\tstorage *storage.MinioStorage,\n\tproducer *kafka.Producer,\n\tprofileServiceURL string,\n\tuserServiceURL string,\n) *MediaService {\n\treturn \u0026MediaService{\n\t\tmediaRepo:     mediaRepo,\n\t\tstorage:       storage,\n\t\tproducer:      producer,\n\t\tprofileClient: httpclient.NewClient(profileServiceURL, \"profile-service\", 10*time.Second),\n\t\tuserClient:    httpclient.NewClient(userServiceURL, \"user-service\", 10*time.Second),\n\t}\n}",
+            "external": "false",
+            "id": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:44:6",
+            "name": "NewMediaService",
+            "node_type": "function"
+        },
+        {
+            "code": "func NewHandler(mediaService *service.MediaService) *Handler {\n\treturn \u0026Handler{\n\t\tmediaService: mediaService,\n\t}\n}",
+            "external": "false",
+            "id": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:20:6",
+            "name": "NewHandler",
+            "node_type": "function"
+        },
+        {
+            "code": "func (h *Handler) RegisterRoutes(mux *http.ServeMux) {\n\t// Health check\n\tmux.HandleFunc(\"/health\", h.healthCheck)\n\n\t// Media routes\n\tmux.HandleFunc(\"/api/v1/media\", h.handleMedia)\n\tmux.HandleFunc(\"/api/v1/media/\", h.handleMediaByID)\n\tmux.HandleFunc(\"/api/v1/media/profile/\", h.handleMediaByProfile)\n\tmux.HandleFunc(\"/api/v1/media/primary/\", h.handlePrimary)\n}",
+            "external": "false",
+            "id": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:27:19",
+            "name": "RegisterRoutes",
+            "node_type": "function"
+        },
+        {
+            "code": "func (h *Handler) healthCheck(w http.ResponseWriter, r *http.Request) {\n\tw.Header().Set(\"Content-Type\", \"application/json\")\n\tw.WriteHeader(http.StatusOK)\n\tw.Write([]byte(`{\"success\":true,\"data\":{\"status\":\"healthy\",\"service\":\"media\"}}`))\n}",
+            "external": "false",
+            "id": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:38:19",
+            "name": "healthCheck",
+            "node_type": "function"
+        },
+        {
+            "code": "func (h *Handler) handleMedia(w http.ResponseWriter, r *http.Request) {\n\tif r.Method != http.MethodPost {\n\t\tresponse.Error(w, errors.BadRequest(\"method not allowed\"))\n\t\treturn\n\t}\n\n\th.uploadMedia(w, r)\n}",
+            "external": "false",
+            "id": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:45:19",
+            "name": "handleMedia",
+            "node_type": "function"
+        },
+        {
+            "code": "func (h *Handler) uploadMedia(w http.ResponseWriter, r *http.Request) {\n\tuserID := r.Header.Get(\"X-User-ID\")\n\tif userID == \"\" {\n\t\tresponse.Error(w, errors.Unauthorized(\"authentication required\"))\n\t\treturn\n\t}\n\n\t// Parse multipart form (max 12MB to account for form overhead)\n\tif err := r.ParseMultipartForm(12 \u003c\u003c 20); err != nil {\n\t\tresponse.Error(w, errors.BadRequest(\"failed to parse form: \"+err.Error()))\n\t\treturn\n\t}\n\n\t// Get profile ID\n\tprofileID := r.FormValue(\"profile_id\")\n\tif profileID == \"\" {\n\t\tresponse.Error(w, errors.BadRequest(\"profile_id is required\"))\n\t\treturn\n\t}\n\n\t// Get is_primary flag\n\tisPrimary := r.FormValue(\"is_primary\") == \"true\"\n\n\t// Get the file\n\tfile, header, err := r.FormFile(\"file\")\n\tif err != nil {\n\t\tresponse.Error(w, errors.BadRequest(\"file is required\"))\n\t\treturn\n\t}\n\tdefer file.Close()\n\n\t// Upload\n\tmedia, err := h.mediaService.Upload(\n\t\tr.Context(),\n\t\tuserID,\n\t\tprofileID,\n\t\theader.Filename,\n\t\theader.Header.Get(\"Content-Type\"),\n\t\theader.Size,\n\t\tfile,\n\t\tisPrimary,\n\t)\n\tif err != nil {\n\t\tresponse.Error(w, err)\n\t\treturn\n\t}\n\n\tresponse.Created(w, media)\n}",
+            "external": "false",
+            "id": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:55:19",
+            "name": "uploadMedia",
+            "node_type": "function"
+        },
+        {
+            "code": "func (s *MediaService) Upload(\n\tctx context.Context,\n\tuserID string,\n\tprofileID string,\n\tfilename string,\n\tcontentType string,\n\tsize int64,\n\treader io.Reader,\n\tisPrimary bool,\n) (*model.Media, error) {\n\t// Validate content type\n\tif !allowedContentTypes[contentType] {\n\t\treturn nil, errors.BadRequest(\"invalid file type. Allowed: JPEG, PNG, GIF, WebP\")\n\t}\n\n\t// Validate file size\n\tif size \u003e maxFileSize {\n\t\treturn nil, errors.BadRequest(\"file too large. Maximum size is 10MB\")\n\t}\n\n\t// =====================================================\n\t// CROSS-SERVICE CALL #1: Verify user is active\n\t// =====================================================\n\tuserInfo, err := s.getUserInfo(ctx, userID)\n\tif err != nil {\n\t\tlogger.Warn(\"failed to verify user\", zap.String(\"user_id\", userID), zap.Error(err))\n\t\treturn nil, errors.Wrap(err, errors.CodeUnauthorized, \"failed to verify user\", 401)\n\t}\n\tif !userInfo.IsActive {\n\t\treturn nil, errors.Forbidden(\"user account is not active\")\n\t}\n\tlogger.Debug(\"user verified for media upload\",\n\t\tzap.String(\"user_id\", userID),\n\t\tzap.String(\"email\", userInfo.Email),\n\t)\n\n\t// =====================================================\n\t// CROSS-SERVICE CALL #2: Verify profile exists and belongs to user\n\t// =====================================================\n\tprofileInfo, err := s.getProfileInfo(ctx, profileID)\n\tif err != nil {\n\t\tlogger.Warn(\"failed to verify profile\", zap.String(\"profile_id\", profileID), zap.Error(err))\n\t\treturn nil, errors.Wrap(err, errors.CodeNotFound, \"profile not found\", 404)\n\t}\n\tif profileInfo.UserID != userID {\n\t\tlogger.Warn(\"profile ownership mismatch\",\n\t\t\tzap.String(\"profile_id\", profileID),\n\t\t\tzap.String(\"profile_owner\", profileInfo.UserID),\n\t\t\tzap.String(\"requesting_user\", userID),\n\t\t)\n\t\treturn nil, errors.Forbidden(\"you do not own this profile\")\n\t}\n\tlogger.Debug(\"profile ownership verified\",\n\t\tzap.String(\"profile_id\", profileID),\n\t\tzap.String(\"profile_name\", profileInfo.Name),\n\t)\n\n\t// Check photo limit\n\tcount, err := s.mediaRepo.CountByProfileID(ctx, profileID)\n\tif err != nil {\n\t\treturn nil, err\n\t}\n\tif count \u003e= maxPhotosPerProfile {\n\t\treturn nil, errors.BadRequest(fmt.Sprintf(\"maximum %d photos per profile\", maxPhotosPerProfile))\n\t}\n\n\t// Generate unique filename\n\text := filepath.Ext(filename)\n\tobjectName := fmt.Sprintf(\"profiles/%s/%s%s\", profileID, uuid.New().String(), ext)\n\n\t// Upload to MinIO\n\turl, err := s.storage.Upload(ctx, objectName, reader, size, contentType)\n\tif err != nil {\n\t\tlogger.Error(\"failed to upload to storage\", zap.Error(err))\n\t\treturn nil, errors.Wrap(err, errors.CodeInternalServerError, \"failed to upload file\", 500)\n\t}\n\n\t// If this is the first photo or marked as primary, set it as primary\n\tif count == 0 {\n\t\tisPrimary = true\n\t}\n\n\t// Create media record\n\tmedia := \u0026model.Media{\n\t\tProfileID:   profileID,\n\t\tUserID:      userID,\n\t\tType:        model.MediaTypeImage,\n\t\tFilename:    filename,\n\t\tContentType: contentType,\n\t\tSize:        size,\n\t\tURL:         url,\n\t\tIsPrimary:   isPrimary,\n\t}\n\n\tif err := s.mediaRepo.Create(ctx, media); err != nil {\n\t\t// Try to clean up the uploaded file\n\t\t_ = s.storage.Delete(ctx, objectName)\n\t\treturn nil, err\n\t}\n\n\t// If marked as primary, update other photos\n\tif isPrimary \u0026\u0026 count \u003e 0 {\n\t\tif err := s.mediaRepo.SetPrimary(ctx, profileID, media.ID); err != nil {\n\t\t\tlogger.Warn(\"failed to set primary photo\", zap.Error(err))\n\t\t}\n\t}\n\n\t// Publish event\n\ts.publishMediaUploadedEvent(ctx, media)\n\n\tlogger.Info(\"media uploaded successfully\",\n\t\tzap.String(\"media_id\", media.ID),\n\t\tzap.String(\"profile_id\", profileID),\n\t\tzap.String(\"user_id\", userID),\n\t)\n\n\treturn media, nil\n}",
+            "external": "false",
+            "id": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:61:24",
+            "name": "Upload",
+            "node_type": "function"
+        },
+        {
+            "code": "func (s *MediaService) getUserInfo(ctx context.Context, userID string) (*model.UserInfo, error) {\n\tresp, err := s.userClient.Get(ctx, fmt.Sprintf(\"/api/v1/users/%s\", userID), nil)\n\tif err != nil {\n\t\treturn nil, err\n\t}\n\n\tif !resp.IsSuccess() {\n\t\treturn nil, errors.NotFound(\"user not found\")\n\t}\n\n\tvar result struct {\n\t\tData struct {\n\t\t\tID       string `json:\"id\"`\n\t\t\tEmail    string `json:\"email\"`\n\t\t\tIsActive bool   `json:\"is_active\"`\n\t\t} `json:\"data\"`\n\t}\n\tif err := resp.DecodeJSON(\u0026result); err != nil {\n\t\treturn nil, errors.Wrap(err, errors.CodeInternalServerError, \"failed to decode user response\", 500)\n\t}\n\n\treturn \u0026model.UserInfo{\n\t\tID:       result.Data.ID,\n\t\tEmail:    result.Data.Email,\n\t\tIsActive: result.Data.IsActive,\n\t}, nil\n}",
+            "external": "false",
+            "id": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:266:24",
+            "name": "getUserInfo",
+            "node_type": "function"
+        },
+        {
+            "code": "func (s *MediaService) getProfileInfo(ctx context.Context, profileID string) (*model.ProfileInfo, error) {\n\tresp, err := s.profileClient.Get(ctx, fmt.Sprintf(\"/api/v1/profiles/%s\", profileID), nil)\n\tif err != nil {\n\t\treturn nil, err\n\t}\n\n\tif !resp.IsSuccess() {\n\t\treturn nil, errors.NotFound(\"profile not found\")\n\t}\n\n\tvar result struct {\n\t\tData struct {\n\t\t\tID     string `json:\"id\"`\n\t\t\tUserID string `json:\"user_id\"`\n\t\t\tName   string `json:\"name\"`\n\t\t} `json:\"data\"`\n\t}\n\tif err := resp.DecodeJSON(\u0026result); err != nil {\n\t\treturn nil, errors.Wrap(err, errors.CodeInternalServerError, \"failed to decode profile response\", 500)\n\t}\n\n\treturn \u0026model.ProfileInfo{\n\t\tID:     result.Data.ID,\n\t\tUserID: result.Data.UserID,\n\t\tName:   result.Data.Name,\n\t}, nil\n}",
+            "external": "false",
+            "id": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:295:24",
+            "name": "getProfileInfo",
+            "node_type": "function"
+        },
+        {
+            "code": "func (r *MediaRepository) CountByProfileID(ctx context.Context, profileID string) (int, error) {\n\tvar count int\n\terr := r.db.QueryRowContext(ctx, \"SELECT COUNT(*) FROM media WHERE profile_id = $1\", profileID).Scan(\u0026count)\n\tif err != nil {\n\t\treturn 0, errors.Wrap(err, errors.CodeInternalServerError, \"failed to count media\", 500)\n\t}\n\treturn count, nil\n}",
+            "external": "false",
+            "id": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:222:27",
+            "name": "CountByProfileID",
+            "node_type": "function"
+        },
+        {
+            "code": "func (s *MinioStorage) Upload(ctx context.Context, objectName string, reader io.Reader, size int64, contentType string) (string, error) {\n\t_, err := s.client.PutObject(ctx, s.bucketName, objectName, reader, size, minio.PutObjectOptions{\n\t\tContentType: contentType,\n\t})\n\tif err != nil {\n\t\treturn \"\", fmt.Errorf(\"failed to upload file: %w\", err)\n\t}\n\n\turl := s.GetPublicURL(objectName)\n\tlogger.Debug(\"uploaded file to minio\",\n\t\tzap.String(\"object\", objectName),\n\t\tzap.String(\"url\", url),\n\t\tzap.Int64(\"size\", size),\n\t)\n\n\treturn url, nil\n}",
+            "external": "false",
+            "id": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:93:24",
+            "name": "Upload",
+            "node_type": "function"
+        },
+        {
+            "code": "func (s *MinioStorage) GetPublicURL(objectName string) string {\n\tif s.publicURL != \"\" {\n\t\treturn fmt.Sprintf(\"%s/%s/%s\", s.publicURL, s.bucketName, objectName)\n\t}\n\treturn fmt.Sprintf(\"http://%s/%s/%s\", s.client.EndpointURL().Host, s.bucketName, objectName)\n}",
+            "external": "false",
+            "id": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:123:24",
+            "name": "GetPublicURL",
+            "node_type": "function"
+        },
+        {
+            "code": "func (r *MediaRepository) Create(ctx context.Context, media *model.Media) error {\n\tmedia.ID = uuid.New().String()\n\tmedia.CreatedAt = time.Now().UTC()\n\tmedia.UpdatedAt = media.CreatedAt\n\n\t// Get max sort order for this profile\n\tvar maxSortOrder int\n\terr := r.db.QueryRowContext(ctx,\n\t\t\"SELECT COALESCE(MAX(sort_order), -1) FROM media WHERE profile_id = $1\",\n\t\tmedia.ProfileID,\n\t).Scan(\u0026maxSortOrder)\n\tif err != nil {\n\t\treturn errors.Wrap(err, errors.CodeInternalServerError, \"failed to get max sort order\", 500)\n\t}\n\tmedia.SortOrder = maxSortOrder + 1\n\n\tquery := `\n\tINSERT INTO media (id, profile_id, user_id, type, filename, content_type, size, url, thumbnail_url, is_primary, sort_order, created_at, updated_at)\n\tVALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)\n\t`\n\t_, err = r.db.ExecContext(ctx, query,\n\t\tmedia.ID, media.ProfileID, media.UserID, media.Type, media.Filename,\n\t\tmedia.ContentType, media.Size, media.URL, media.ThumbnailURL,\n\t\tmedia.IsPrimary, media.SortOrder, media.CreatedAt, media.UpdatedAt,\n\t)\n\tif err != nil {\n\t\treturn errors.Wrap(err, errors.CodeInternalServerError, \"failed to create media\", 500)\n\t}\n\n\treturn nil\n}",
+            "external": "false",
+            "id": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:53:27",
+            "name": "Create",
+            "node_type": "function"
+        },
+        {
+            "code": "func (s *MinioStorage) Delete(ctx context.Context, objectName string) error {\n\terr := s.client.RemoveObject(ctx, s.bucketName, objectName, minio.RemoveObjectOptions{})\n\tif err != nil {\n\t\treturn fmt.Errorf(\"failed to delete file: %w\", err)\n\t}\n\n\tlogger.Debug(\"deleted file from minio\", zap.String(\"object\", objectName))\n\treturn nil\n}",
+            "external": "false",
+            "id": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:112:24",
+            "name": "Delete",
+            "node_type": "function"
+        },
+        {
+            "code": "func (r *MediaRepository) SetPrimary(ctx context.Context, profileID, mediaID string) error {\n\ttx, err := r.db.BeginTx(ctx, nil)\n\tif err != nil {\n\t\treturn errors.Wrap(err, errors.CodeInternalServerError, \"failed to start transaction\", 500)\n\t}\n\tdefer tx.Rollback()\n\n\t// Unset all primary for this profile\n\t_, err = tx.ExecContext(ctx, \"UPDATE media SET is_primary = FALSE, updated_at = NOW() WHERE profile_id = $1\", profileID)\n\tif err != nil {\n\t\treturn errors.Wrap(err, errors.CodeInternalServerError, \"failed to unset primary\", 500)\n\t}\n\n\t// Set the new primary\n\tresult, err := tx.ExecContext(ctx, \"UPDATE media SET is_primary = TRUE, updated_at = NOW() WHERE id = $1 AND profile_id = $2\", mediaID, profileID)\n\tif err != nil {\n\t\treturn errors.Wrap(err, errors.CodeInternalServerError, \"failed to set primary\", 500)\n\t}\n\n\trowsAffected, _ := result.RowsAffected()\n\tif rowsAffected == 0 {\n\t\treturn errors.NotFound(\"media not found\")\n\t}\n\n\treturn tx.Commit()\n}",
+            "external": "false",
+            "id": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:165:27",
+            "name": "SetPrimary",
+            "node_type": "function"
+        },
+        {
+            "code": "func (s *MediaService) publishMediaUploadedEvent(ctx context.Context, media *model.Media) {\n\tevent := model.MediaEvent{\n\t\tMediaID:     media.ID,\n\t\tProfileID:   media.ProfileID,\n\t\tUserID:      media.UserID,\n\t\tType:        media.Type,\n\t\tURL:         media.URL,\n\t\tContentType: media.ContentType,\n\t\tSize:        media.Size,\n\t\tTimestamp:   time.Now(),\n\t}\n\n\tif err := s.producer.PublishWithKey(ctx, kafka.TopicMediaUploaded, media.ID, \"media.uploaded\", event); err != nil {\n\t\tlogger.Error(\"failed to publish media uploaded event\", zap.Error(err))\n\t}\n}",
+            "external": "false",
+            "id": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:327:24",
+            "name": "publishMediaUploadedEvent",
+            "node_type": "function"
+        },
+        {
+            "code": "func (h *Handler) handleMediaByID(w http.ResponseWriter, r *http.Request) {\n\t// Extract media ID from path\n\tpath := strings.TrimPrefix(r.URL.Path, \"/api/v1/media/\")\n\n\t// Check if this is a profile or primary route\n\tif strings.HasPrefix(path, \"profile/\") || strings.HasPrefix(path, \"primary/\") {\n\t\treturn // Let other handlers handle these\n\t}\n\n\tmediaID := strings.TrimSuffix(path, \"/\")\n\tif mediaID == \"\" {\n\t\tresponse.Error(w, errors.BadRequest(\"media ID is required\"))\n\t\treturn\n\t}\n\n\tswitch r.Method {\n\tcase http.MethodGet:\n\t\th.getMedia(w, r, mediaID)\n\tcase http.MethodDelete:\n\t\th.deleteMedia(w, r, mediaID)\n\tdefault:\n\t\tresponse.Error(w, errors.BadRequest(\"method not allowed\"))\n\t}\n}",
+            "external": "false",
+            "id": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:106:19",
+            "name": "handleMediaByID",
+            "node_type": "function"
+        },
+        {
+            "code": "func (h *Handler) getMedia(w http.ResponseWriter, r *http.Request, mediaID string) {\n\tmedia, err := h.mediaService.GetByID(r.Context(), mediaID)\n\tif err != nil {\n\t\tresponse.Error(w, err)\n\t\treturn\n\t}\n\n\tresponse.OK(w, media)\n}",
+            "external": "false",
+            "id": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:132:19",
+            "name": "getMedia",
+            "node_type": "function"
+        },
+        {
+            "code": "func (s *MediaService) GetByID(ctx context.Context, id string) (*model.Media, error) {\n\treturn s.mediaRepo.GetByID(ctx, id)\n}",
+            "external": "false",
+            "id": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:181:24",
+            "name": "GetByID",
+            "node_type": "function"
+        },
+        {
+            "code": "func (r *MediaRepository) GetByID(ctx context.Context, id string) (*model.Media, error) {\n\tquery := `\n\tSELECT id, profile_id, user_id, type, filename, content_type, size, url, thumbnail_url, is_primary, sort_order, created_at, updated_at\n\tFROM media WHERE id = $1\n\t`\n\tvar media model.Media\n\tvar thumbnailURL sql.NullString\n\n\terr := r.db.QueryRowContext(ctx, query, id).Scan(\n\t\t\u0026media.ID, \u0026media.ProfileID, \u0026media.UserID, \u0026media.Type, \u0026media.Filename,\n\t\t\u0026media.ContentType, \u0026media.Size, \u0026media.URL, \u0026thumbnailURL,\n\t\t\u0026media.IsPrimary, \u0026media.SortOrder, \u0026media.CreatedAt, \u0026media.UpdatedAt,\n\t)\n\tif err == sql.ErrNoRows {\n\t\treturn nil, errors.NotFound(\"media not found\")\n\t}\n\tif err != nil {\n\t\treturn nil, errors.Wrap(err, errors.CodeInternalServerError, \"failed to get media\", 500)\n\t}\n\n\tif thumbnailURL.Valid {\n\t\tmedia.ThumbnailURL = thumbnailURL.String\n\t}\n\n\treturn \u0026media, nil\n}",
+            "external": "false",
+            "id": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:86:27",
+            "name": "GetByID",
+            "node_type": "function"
+        },
+        {
+            "code": "func (h *Handler) deleteMedia(w http.ResponseWriter, r *http.Request, mediaID string) {\n\tuserID := r.Header.Get(\"X-User-ID\")\n\tif userID == \"\" {\n\t\tresponse.Error(w, errors.Unauthorized(\"authentication required\"))\n\t\treturn\n\t}\n\n\tif err := h.mediaService.Delete(r.Context(), userID, mediaID); err != nil {\n\t\tresponse.Error(w, err)\n\t\treturn\n\t}\n\n\tresponse.NoContent(w)\n}",
+            "external": "false",
+            "id": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:143:19",
+            "name": "deleteMedia",
+            "node_type": "function"
+        },
+        {
+            "code": "func (s *MediaService) Delete(ctx context.Context, userID, mediaID string) error {\n\t// Get the media record\n\tmedia, err := s.mediaRepo.GetByID(ctx, mediaID)\n\tif err != nil {\n\t\treturn err\n\t}\n\n\t// =====================================================\n\t// CROSS-SERVICE CALL #3: Verify profile ownership before delete\n\t// =====================================================\n\tprofileInfo, err := s.getProfileInfo(ctx, media.ProfileID)\n\tif err != nil {\n\t\tlogger.Warn(\"failed to verify profile for delete\", zap.String(\"profile_id\", media.ProfileID), zap.Error(err))\n\t\treturn errors.Wrap(err, errors.CodeNotFound, \"profile not found\", 404)\n\t}\n\tif profileInfo.UserID != userID {\n\t\treturn errors.Forbidden(\"you do not own this media\")\n\t}\n\n\t// Extract object name from URL\n\tobjectName := s.extractObjectName(media.URL)\n\tif objectName != \"\" {\n\t\tif err := s.storage.Delete(ctx, objectName); err != nil {\n\t\t\tlogger.Warn(\"failed to delete from storage\", zap.Error(err), zap.String(\"object\", objectName))\n\t\t}\n\t}\n\n\t// Delete from database\n\tif err := s.mediaRepo.Delete(ctx, mediaID); err != nil {\n\t\treturn err\n\t}\n\n\t// If this was the primary photo, set another as primary\n\tif media.IsPrimary {\n\t\tmediaList, _ := s.mediaRepo.GetByProfileID(ctx, media.ProfileID)\n\t\tif len(mediaList) \u003e 0 {\n\t\t\t_ = s.mediaRepo.SetPrimary(ctx, media.ProfileID, mediaList[0].ID)\n\t\t}\n\t}\n\n\t// Publish event\n\ts.publishMediaDeletedEvent(ctx, media)\n\n\tlogger.Info(\"media deleted successfully\",\n\t\tzap.String(\"media_id\", mediaID),\n\t\tzap.String(\"profile_id\", media.ProfileID),\n\t)\n\n\treturn nil\n}",
+            "external": "false",
+            "id": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:191:24",
+            "name": "Delete",
+            "node_type": "function"
+        },
+        {
+            "code": "func (s *MediaService) extractObjectName(url string) string {\n\t// URL format: http://host:port/bucket/object-name\n\tparts := strings.Split(url, \"/\")\n\tif len(parts) \u003e= 5 {\n\t\treturn strings.Join(parts[4:], \"/\")\n\t}\n\treturn \"\"\n}",
+            "external": "false",
+            "id": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:362:24",
+            "name": "extractObjectName",
+            "node_type": "function"
+        },
+        {
+            "code": "func (r *MediaRepository) Delete(ctx context.Context, id string) error {\n\tresult, err := r.db.ExecContext(ctx, \"DELETE FROM media WHERE id = $1\", id)\n\tif err != nil {\n\t\treturn errors.Wrap(err, errors.CodeInternalServerError, \"failed to delete media\", 500)\n\t}\n\n\trowsAffected, _ := result.RowsAffected()\n\tif rowsAffected == 0 {\n\t\treturn errors.NotFound(\"media not found\")\n\t}\n\n\treturn nil\n}",
+            "external": "false",
+            "id": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:150:27",
+            "name": "Delete",
+            "node_type": "function"
+        },
+        {
+            "code": "func (r *MediaRepository) GetByProfileID(ctx context.Context, profileID string) ([]*model.Media, error) {\n\tquery := `\n\tSELECT id, profile_id, user_id, type, filename, content_type, size, url, thumbnail_url, is_primary, sort_order, created_at, updated_at\n\tFROM media WHERE profile_id = $1\n\tORDER BY sort_order ASC\n\t`\n\trows, err := r.db.QueryContext(ctx, query, profileID)\n\tif err != nil {\n\t\treturn nil, errors.Wrap(err, errors.CodeInternalServerError, \"failed to get media\", 500)\n\t}\n\tdefer rows.Close()\n\n\tvar mediaList []*model.Media\n\tfor rows.Next() {\n\t\tvar media model.Media\n\t\tvar thumbnailURL sql.NullString\n\n\t\tif err := rows.Scan(\n\t\t\t\u0026media.ID, \u0026media.ProfileID, \u0026media.UserID, \u0026media.Type, \u0026media.Filename,\n\t\t\t\u0026media.ContentType, \u0026media.Size, \u0026media.URL, \u0026thumbnailURL,\n\t\t\t\u0026media.IsPrimary, \u0026media.SortOrder, \u0026media.CreatedAt, \u0026media.UpdatedAt,\n\t\t); err != nil {\n\t\t\treturn nil, errors.Wrap(err, errors.CodeInternalServerError, \"failed to scan media\", 500)\n\t\t}\n\n\t\tif thumbnailURL.Valid {\n\t\t\tmedia.ThumbnailURL = thumbnailURL.String\n\t\t}\n\n\t\tmediaList = append(mediaList, \u0026media)\n\t}\n\n\treturn mediaList, nil\n}",
+            "external": "false",
+            "id": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:114:27",
+            "name": "GetByProfileID",
+            "node_type": "function"
+        },
+        {
+            "code": "func (s *MediaService) publishMediaDeletedEvent(ctx context.Context, media *model.Media) {\n\tevent := model.MediaEvent{\n\t\tMediaID:     media.ID,\n\t\tProfileID:   media.ProfileID,\n\t\tUserID:      media.UserID,\n\t\tType:        media.Type,\n\t\tURL:         media.URL,\n\t\tContentType: media.ContentType,\n\t\tSize:        media.Size,\n\t\tTimestamp:   time.Now(),\n\t}\n\n\tif err := s.producer.PublishWithKey(ctx, kafka.TopicMediaDeleted, media.ID, \"media.deleted\", event); err != nil {\n\t\tlogger.Error(\"failed to publish media deleted event\", zap.Error(err))\n\t}\n}",
+            "external": "false",
+            "id": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:344:24",
+            "name": "publishMediaDeletedEvent",
+            "node_type": "function"
+        },
+        {
+            "code": "func (h *Handler) handleMediaByProfile(w http.ResponseWriter, r *http.Request) {\n\tif r.Method != http.MethodGet {\n\t\tresponse.Error(w, errors.BadRequest(\"method not allowed\"))\n\t\treturn\n\t}\n\n\t// Extract profile ID from path\n\tprofileID := strings.TrimPrefix(r.URL.Path, \"/api/v1/media/profile/\")\n\tprofileID = strings.TrimSuffix(profileID, \"/\")\n\tif profileID == \"\" {\n\t\tresponse.Error(w, errors.BadRequest(\"profile ID is required\"))\n\t\treturn\n\t}\n\n\tmediaList, err := h.mediaService.GetByProfileID(r.Context(), profileID)\n\tif err != nil {\n\t\tresponse.Error(w, err)\n\t\treturn\n\t}\n\n\t// Return empty array instead of null\n\tif mediaList == nil {\n\t\tmediaList = []*model.Media{}\n\t}\n\n\tresponse.OK(w, mediaList)\n}",
+            "external": "false",
+            "id": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:159:19",
+            "name": "handleMediaByProfile",
+            "node_type": "function"
+        },
+        {
+            "code": "func (s *MediaService) GetByProfileID(ctx context.Context, profileID string) ([]*model.Media, error) {\n\treturn s.mediaRepo.GetByProfileID(ctx, profileID)\n}",
+            "external": "false",
+            "id": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:186:24",
+            "name": "GetByProfileID",
+            "node_type": "function"
+        },
+        {
+            "code": "func (h *Handler) handlePrimary(w http.ResponseWriter, r *http.Request) {\n\tif r.Method != http.MethodPost {\n\t\tresponse.Error(w, errors.BadRequest(\"method not allowed\"))\n\t\treturn\n\t}\n\n\tuserID := r.Header.Get(\"X-User-ID\")\n\tif userID == \"\" {\n\t\tresponse.Error(w, errors.Unauthorized(\"authentication required\"))\n\t\treturn\n\t}\n\n\t// Extract profile ID from path\n\tprofileID := strings.TrimPrefix(r.URL.Path, \"/api/v1/media/primary/\")\n\tprofileID = strings.TrimSuffix(profileID, \"/\")\n\tif profileID == \"\" {\n\t\tresponse.Error(w, errors.BadRequest(\"profile ID is required\"))\n\t\treturn\n\t}\n\n\tvar req model.SetPrimaryRequest\n\tif err := json.NewDecoder(r.Body).Decode(\u0026req); err != nil {\n\t\tresponse.Error(w, errors.BadRequest(\"invalid request body\"))\n\t\treturn\n\t}\n\n\tif req.MediaID == \"\" {\n\t\tresponse.Error(w, errors.BadRequest(\"media_id is required\"))\n\t\treturn\n\t}\n\n\tif err := h.mediaService.SetPrimary(r.Context(), userID, profileID, req.MediaID); err != nil {\n\t\tresponse.Error(w, err)\n\t\treturn\n\t}\n\n\tresponse.OK(w, map[string]string{\"message\": \"primary photo updated\"})\n}",
+            "external": "false",
+            "id": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:188:19",
+            "name": "handlePrimary",
+            "node_type": "function"
+        },
+        {
+            "code": "func (s *MediaService) SetPrimary(ctx context.Context, userID, profileID, mediaID string) error {\n\t// Verify ownership\n\tprofileInfo, err := s.getProfileInfo(ctx, profileID)\n\tif err != nil {\n\t\treturn err\n\t}\n\tif profileInfo.UserID != userID {\n\t\treturn errors.Forbidden(\"you do not own this profile\")\n\t}\n\n\treturn s.mediaRepo.SetPrimary(ctx, profileID, mediaID)\n}",
+            "external": "false",
+            "id": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:243:24",
+            "name": "SetPrimary",
+            "node_type": "function"
+        }
+    ],
+    "links": [
+        {
+            "column": 30,
+            "line": 73,
+            "source": "/home/evan/Code/rinder/services/media/cmd/main.go:25:1",
+            "target": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:33:6",
+            "val": 1
+        },
+        {
+            "column": 19,
+            "line": 48,
+            "source": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:33:6",
+            "target": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:57:24",
+            "val": 1
+        },
+        {
+            "column": 38,
+            "line": 57,
+            "source": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:57:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:57:24",
+            "val": 1
+        },
+        {
+            "column": 28,
+            "line": 63,
+            "source": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:57:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:57:24",
+            "val": 1
+        },
+        {
+            "column": 33,
+            "line": 82,
+            "source": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:57:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:57:24",
+            "val": 1
+        },
+        {
+            "column": 25,
+            "line": 91,
+            "source": "/home/evan/Code/rinder/services/media/cmd/main.go:25:1",
+            "target": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:19:6",
+            "val": 1
+        },
+        {
+            "column": 21,
+            "line": 94,
+            "source": "/home/evan/Code/rinder/services/media/cmd/main.go:25:1",
+            "target": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:24:27",
+            "val": 1
+        },
+        {
+            "column": 28,
+            "line": 44,
+            "source": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:24:27",
+            "target": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:24:27",
+            "val": 1
+        },
+        {
+            "column": 25,
+            "line": 100,
+            "source": "/home/evan/Code/rinder/services/media/cmd/main.go:25:1",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:44:6",
+            "val": 1
+        },
+        {
+            "column": 14,
+            "line": 113,
+            "source": "/home/evan/Code/rinder/services/media/cmd/main.go:25:1",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:20:6",
+            "val": 1
+        },
+        {
+            "column": 3,
+            "line": 117,
+            "source": "/home/evan/Code/rinder/services/media/cmd/main.go:25:1",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:27:19",
+            "val": 1
+        },
+        {
+            "column": 29,
+            "line": 28,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:27:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:38:19",
+            "val": 1
+        },
+        {
+            "column": 35,
+            "line": 31,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:27:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:45:19",
+            "val": 1
+        },
+        {
+            "column": 17,
+            "line": 46,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:45:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:45:19",
+            "val": 1
+        },
+        {
+            "column": 3,
+            "line": 50,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:45:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:55:19",
+            "val": 1
+        },
+        {
+            "column": 17,
+            "line": 57,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:55:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:55:19",
+            "val": 1
+        },
+        {
+            "column": 17,
+            "line": 63,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:55:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:55:19",
+            "val": 1
+        },
+        {
+            "column": 17,
+            "line": 70,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:55:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:55:19",
+            "val": 1
+        },
+        {
+            "column": 17,
+            "line": 80,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:55:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:55:19",
+            "val": 1
+        },
+        {
+            "column": 30,
+            "line": 86,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:55:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:61:24",
+            "val": 1
+        },
+        {
+            "column": 20,
+            "line": 83,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:61:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:266:24",
+            "val": 1
+        },
+        {
+            "column": 31,
+            "line": 266,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:266:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:266:24",
+            "val": 1
+        },
+        {
+            "column": 68,
+            "line": 266,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:266:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:266:24",
+            "val": 1
+        },
+        {
+            "column": 23,
+            "line": 99,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:61:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:295:24",
+            "val": 1
+        },
+        {
+            "column": 34,
+            "line": 295,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:295:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:295:24",
+            "val": 1
+        },
+        {
+            "column": 74,
+            "line": 295,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:295:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:295:24",
+            "val": 1
+        },
+        {
+            "column": 27,
+            "line": 118,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:61:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:222:27",
+            "val": 1
+        },
+        {
+            "column": 29,
+            "line": 223,
+            "source": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:222:27",
+            "target": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:222:27",
+            "val": 1
+        },
+        {
+            "column": 86,
+            "line": 223,
+            "source": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:222:27",
+            "target": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:222:27",
+            "val": 1
+        },
+        {
+            "column": 23,
+            "line": 131,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:61:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:93:24",
+            "val": 1
+        },
+        {
+            "column": 30,
+            "line": 93,
+            "source": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:93:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:93:24",
+            "val": 1
+        },
+        {
+            "column": 49,
+            "line": 93,
+            "source": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:93:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:93:24",
+            "val": 1
+        },
+        {
+            "column": 61,
+            "line": 93,
+            "source": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:93:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:93:24",
+            "val": 1
+        },
+        {
+            "column": 69,
+            "line": 93,
+            "source": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:93:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:93:24",
+            "val": 1
+        },
+        {
+            "column": 10,
+            "line": 100,
+            "source": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:93:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:123:24",
+            "val": 1
+        },
+        {
+            "column": 60,
+            "line": 124,
+            "source": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:123:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:123:24",
+            "val": 1
+        },
+        {
+            "column": 82,
+            "line": 126,
+            "source": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:123:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:123:24",
+            "val": 1
+        },
+        {
+            "column": 23,
+            "line": 100,
+            "source": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:93:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:93:24",
+            "val": 1
+        },
+        {
+            "column": 23,
+            "line": 102,
+            "source": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:93:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:93:24",
+            "val": 1
+        },
+        {
+            "column": 20,
+            "line": 104,
+            "source": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:93:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:93:24",
+            "val": 1
+        },
+        {
+            "column": 23,
+            "line": 154,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:61:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:53:27",
+            "val": 1
+        },
+        {
+            "column": 29,
+            "line": 59,
+            "source": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:53:27",
+            "target": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:53:27",
+            "val": 1
+        },
+        {
+            "column": 27,
+            "line": 72,
+            "source": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:53:27",
+            "target": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:53:27",
+            "val": 1
+        },
+        {
+            "column": 16,
+            "line": 156,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:61:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:112:24",
+            "val": 1
+        },
+        {
+            "column": 30,
+            "line": 112,
+            "source": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:112:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:112:24",
+            "val": 1
+        },
+        {
+            "column": 49,
+            "line": 112,
+            "source": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:112:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:112:24",
+            "val": 1
+        },
+        {
+            "column": 62,
+            "line": 117,
+            "source": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:112:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:112:24",
+            "val": 1
+        },
+        {
+            "column": 24,
+            "line": 162,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:61:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:165:27",
+            "val": 1
+        },
+        {
+            "column": 25,
+            "line": 165,
+            "source": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:165:27",
+            "target": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:165:27",
+            "val": 1
+        },
+        {
+            "column": 25,
+            "line": 172,
+            "source": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:165:27",
+            "target": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:165:27",
+            "val": 1
+        },
+        {
+            "column": 111,
+            "line": 172,
+            "source": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:165:27",
+            "target": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:165:27",
+            "val": 1
+        },
+        {
+            "column": 31,
+            "line": 178,
+            "source": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:165:27",
+            "target": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:165:27",
+            "val": 1
+        },
+        {
+            "column": 128,
+            "line": 178,
+            "source": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:165:27",
+            "target": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:165:27",
+            "val": 1
+        },
+        {
+            "column": 137,
+            "line": 178,
+            "source": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:165:27",
+            "target": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:165:27",
+            "val": 1
+        },
+        {
+            "column": 3,
+            "line": 168,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:61:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:327:24",
+            "val": 1
+        },
+        {
+            "column": 37,
+            "line": 338,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:327:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:327:24",
+            "val": 1
+        },
+        {
+            "column": 17,
+            "line": 97,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:55:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:55:19",
+            "val": 1
+        },
+        {
+            "column": 18,
+            "line": 101,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:55:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:55:19",
+            "val": 1
+        },
+        {
+            "column": 15,
+            "line": 50,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:45:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:45:19",
+            "val": 1
+        },
+        {
+            "column": 18,
+            "line": 50,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:45:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:45:19",
+            "val": 1
+        },
+        {
+            "column": 36,
+            "line": 32,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:27:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:106:19",
+            "val": 1
+        },
+        {
+            "column": 17,
+            "line": 116,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:106:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:106:19",
+            "val": 1
+        },
+        {
+            "column": 4,
+            "line": 122,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:106:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:132:19",
+            "val": 1
+        },
+        {
+            "column": 30,
+            "line": 132,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:132:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:181:24",
+            "val": 1
+        },
+        {
+            "column": 20,
+            "line": 181,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:181:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:86:27",
+            "val": 1
+        },
+        {
+            "column": 29,
+            "line": 93,
+            "source": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:86:27",
+            "target": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:86:27",
+            "val": 1
+        },
+        {
+            "column": 41,
+            "line": 93,
+            "source": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:86:27",
+            "target": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:86:27",
+            "val": 1
+        },
+        {
+            "column": 28,
+            "line": 181,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:181:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:181:24",
+            "val": 1
+        },
+        {
+            "column": 33,
+            "line": 181,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:181:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:181:24",
+            "val": 1
+        },
+        {
+            "column": 51,
+            "line": 132,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:132:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:132:19",
+            "val": 1
+        },
+        {
+            "column": 17,
+            "line": 134,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:132:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:132:19",
+            "val": 1
+        },
+        {
+            "column": 13,
+            "line": 138,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:132:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:132:19",
+            "val": 1
+        },
+        {
+            "column": 13,
+            "line": 122,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:106:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:106:19",
+            "val": 1
+        },
+        {
+            "column": 16,
+            "line": 122,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:106:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:106:19",
+            "val": 1
+        },
+        {
+            "column": 4,
+            "line": 124,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:106:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:143:19",
+            "val": 1
+        },
+        {
+            "column": 17,
+            "line": 145,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:143:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:143:19",
+            "val": 1
+        },
+        {
+            "column": 26,
+            "line": 149,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:143:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:191:24",
+            "val": 1
+        },
+        {
+            "column": 27,
+            "line": 192,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:191:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:86:27",
+            "val": 1
+        },
+        {
+            "column": 35,
+            "line": 192,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:191:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:191:24",
+            "val": 1
+        },
+        {
+            "column": 40,
+            "line": 192,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:191:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:191:24",
+            "val": 1
+        },
+        {
+            "column": 23,
+            "line": 200,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:191:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:295:24",
+            "val": 1
+        },
+        {
+            "column": 38,
+            "line": 200,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:191:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:191:24",
+            "val": 1
+        },
+        {
+            "column": 17,
+            "line": 210,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:191:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:362:24",
+            "val": 1
+        },
+        {
+            "column": 24,
+            "line": 363,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:362:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:362:24",
+            "val": 1
+        },
+        {
+            "column": 22,
+            "line": 212,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:191:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/storage/minio.go:112:24",
+            "val": 1
+        },
+        {
+            "column": 29,
+            "line": 212,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:191:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:191:24",
+            "val": 1
+        },
+        {
+            "column": 23,
+            "line": 218,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:191:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:150:27",
+            "val": 1
+        },
+        {
+            "column": 33,
+            "line": 150,
+            "source": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:150:27",
+            "target": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:150:27",
+            "val": 1
+        },
+        {
+            "column": 73,
+            "line": 150,
+            "source": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:150:27",
+            "target": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:150:27",
+            "val": 1
+        },
+        {
+            "column": 30,
+            "line": 218,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:191:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:191:24",
+            "val": 1
+        },
+        {
+            "column": 35,
+            "line": 218,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:191:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:191:24",
+            "val": 1
+        },
+        {
+            "column": 30,
+            "line": 224,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:191:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:114:27",
+            "val": 1
+        },
+        {
+            "column": 32,
+            "line": 119,
+            "source": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:114:27",
+            "target": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:114:27",
+            "val": 1
+        },
+        {
+            "column": 44,
+            "line": 119,
+            "source": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:114:27",
+            "target": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:114:27",
+            "val": 1
+        },
+        {
+            "column": 45,
+            "line": 224,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:191:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:191:24",
+            "val": 1
+        },
+        {
+            "column": 19,
+            "line": 226,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:191:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:165:27",
+            "val": 1
+        },
+        {
+            "column": 30,
+            "line": 226,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:191:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:191:24",
+            "val": 1
+        },
+        {
+            "column": 3,
+            "line": 231,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:191:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:344:24",
+            "val": 1
+        },
+        {
+            "column": 37,
+            "line": 355,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:344:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:344:24",
+            "val": 1
+        },
+        {
+            "column": 28,
+            "line": 231,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:191:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:191:24",
+            "val": 1
+        },
+        {
+            "column": 25,
+            "line": 234,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:191:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:191:24",
+            "val": 1
+        },
+        {
+            "column": 54,
+            "line": 149,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:143:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:143:19",
+            "val": 1
+        },
+        {
+            "column": 17,
+            "line": 150,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:143:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:143:19",
+            "val": 1
+        },
+        {
+            "column": 20,
+            "line": 154,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:143:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:143:19",
+            "val": 1
+        },
+        {
+            "column": 16,
+            "line": 124,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:106:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:106:19",
+            "val": 1
+        },
+        {
+            "column": 19,
+            "line": 124,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:106:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:106:19",
+            "val": 1
+        },
+        {
+            "column": 17,
+            "line": 126,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:106:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:106:19",
+            "val": 1
+        },
+        {
+            "column": 44,
+            "line": 33,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:27:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:159:19",
+            "val": 1
+        },
+        {
+            "column": 17,
+            "line": 160,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:159:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:159:19",
+            "val": 1
+        },
+        {
+            "column": 17,
+            "line": 168,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:159:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:159:19",
+            "val": 1
+        },
+        {
+            "column": 34,
+            "line": 172,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:159:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:186:24",
+            "val": 1
+        },
+        {
+            "column": 20,
+            "line": 186,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:186:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:114:27",
+            "val": 1
+        },
+        {
+            "column": 35,
+            "line": 186,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:186:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:186:24",
+            "val": 1
+        },
+        {
+            "column": 40,
+            "line": 186,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:186:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:186:24",
+            "val": 1
+        },
+        {
+            "column": 17,
+            "line": 174,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:159:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:159:19",
+            "val": 1
+        },
+        {
+            "column": 13,
+            "line": 183,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:159:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:159:19",
+            "val": 1
+        },
+        {
+            "column": 44,
+            "line": 34,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:27:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:188:19",
+            "val": 1
+        },
+        {
+            "column": 17,
+            "line": 189,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:188:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:188:19",
+            "val": 1
+        },
+        {
+            "column": 17,
+            "line": 195,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:188:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:188:19",
+            "val": 1
+        },
+        {
+            "column": 17,
+            "line": 203,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:188:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:188:19",
+            "val": 1
+        },
+        {
+            "column": 17,
+            "line": 209,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:188:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:188:19",
+            "val": 1
+        },
+        {
+            "column": 17,
+            "line": 214,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:188:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:188:19",
+            "val": 1
+        },
+        {
+            "column": 26,
+            "line": 218,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:188:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:243:24",
+            "val": 1
+        },
+        {
+            "column": 23,
+            "line": 244,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:243:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:295:24",
+            "val": 1
+        },
+        {
+            "column": 38,
+            "line": 244,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:243:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:243:24",
+            "val": 1
+        },
+        {
+            "column": 43,
+            "line": 244,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:243:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:243:24",
+            "val": 1
+        },
+        {
+            "column": 20,
+            "line": 252,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:243:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/repository/media_repository.go:165:27",
+            "val": 1
+        },
+        {
+            "column": 31,
+            "line": 252,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:243:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:243:24",
+            "val": 1
+        },
+        {
+            "column": 36,
+            "line": 252,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:243:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:243:24",
+            "val": 1
+        },
+        {
+            "column": 47,
+            "line": 252,
+            "source": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:243:24",
+            "target": "/home/evan/Code/rinder/services/media/internal/service/media_service.go:243:24",
+            "val": 1
+        },
+        {
+            "column": 17,
+            "line": 219,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:188:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:188:19",
+            "val": 1
+        },
+        {
+            "column": 13,
+            "line": 223,
+            "source": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:188:19",
+            "target": "/home/evan/Code/rinder/services/media/internal/handler/handler.go:188:19",
+            "val": 1
+        }
+    ]
+}

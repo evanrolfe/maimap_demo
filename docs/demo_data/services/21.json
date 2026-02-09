@@ -1,0 +1,450 @@
+{
+    "id": 21,
+    "name": "service-payment-worldpay",
+    "git_repo_url": "/home/evan/Code/rinder/services/payment-worldpay",
+    "entrypoint_path": "cmd/main.go",
+    "entrypoint_function": "main",
+    "git_org_url": "github.com/rinder",
+    "git_commit": null,
+    "created_at": "2026-01-30T09:46:08.765907362Z",
+    "updated_at": "2026-01-30T09:46:12.265426095Z",
+    "status": "analyzing-completed",
+    "handlers": [
+        {
+            "id": 260,
+            "type": "http",
+            "method": "GET",
+            "path": "/api/v1/payment-methods",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "paymentMethods",
+            "source_function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/handler/handler.go:25:19",
+            "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/handler/handler.go:92:19",
+            "outputs": [
+                {
+                    "id": 1577,
+                    "handler_id": 260,
+                    "type": "http_response",
+                    "label": "HTTP 200 OK with JSON body (response.OK)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/handler/handler.go:92:19",
+                    "function_name": "paymentMethods",
+                    "description": "When a GET request is made with a valid user_id, the handler calls WorldpayService.GetPaymentMethods, and the resulting slice of payment methods is written back to the HTTP client as a 200 OK JSON response.",
+                    "created_at": "2026-01-30T09:47:35.724650955Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1578,
+                    "handler_id": 260,
+                    "type": "http_response",
+                    "label": "HTTP 201 Created with JSON body (response.Created)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/handler/handler.go:92:19",
+                    "function_name": "paymentMethods",
+                    "description": "When a POST request with a valid CreatePaymentMethodRequest body is received, the handler calls WorldpayService.CreatePaymentMethod and returns the created payment method to the HTTP client as a 201 Created JSON response.",
+                    "created_at": "2026-01-30T09:47:35.73623586Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1580,
+                    "handler_id": 260,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request (invalid request body) (response.Error)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/handler/handler.go:92:19",
+                    "function_name": "paymentMethods",
+                    "description": "If a POST request contains an invalid JSON body that cannot be decoded to CreatePaymentMethodRequest, the handler responds to the HTTP client with a bad-request error (via response.Error).",
+                    "created_at": "2026-01-30T09:47:35.73834742Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1579,
+                    "handler_id": 260,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request (missing user_id) (response.Error)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/handler/handler.go:92:19",
+                    "function_name": "paymentMethods",
+                    "description": "If a GET request is missing the required user_id query parameter, the handler responds to the HTTP client with a bad-request error (via response.Error).",
+                    "created_at": "2026-01-30T09:47:35.737396619Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1582,
+                    "handler_id": 260,
+                    "type": "http_response",
+                    "label": "HTTP 405 Method Not Allowed (response.Error)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/handler/handler.go:92:19",
+                    "function_name": "paymentMethods",
+                    "description": "If the request method is not GET or POST, the handler responds to the HTTP client with a method-not-allowed error (via response.Error).",
+                    "created_at": "2026-01-30T09:47:35.740089352Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1581,
+                    "handler_id": 260,
+                    "type": "http_response",
+                    "label": "HTTP Error response for service errors (response.Error)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/handler/handler.go:92:19",
+                    "function_name": "paymentMethods",
+                    "description": "If WorldpayService.GetPaymentMethods or WorldpayService.CreatePaymentMethod returns an error, the handler forwards an error response to the HTTP client using response.Error. (The specific HTTP status depends on the error handling implementation inside response.Error.)",
+                    "created_at": "2026-01-30T09:47:35.739277143Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1583,
+                    "handler_id": 260,
+                    "type": "other",
+                    "label": "In-memory payment methods map updated",
+                    "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/service/worldpay_service.go:230:27",
+                    "function_name": "CreatePaymentMethod",
+                    "description": "CreatePaymentMethod constructs a new PaymentMethod and appends it to the service's in-memory map s.paymentMethods[userID] (an in-process state mutation). This is not an external call but is a side-effect of handling POST.",
+                    "created_at": "2026-01-30T09:47:35.740943187Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1584,
+                    "handler_id": 260,
+                    "type": "other",
+                    "label": "Read from in-memory payment methods map",
+                    "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/service/worldpay_service.go:260:27",
+                    "function_name": "GetPaymentMethods",
+                    "description": "GetPaymentMethods reads the slice of payment methods for the given userID from the service's in-memory map (returns an empty slice if none exist). This is an internal read used to produce the response.",
+                    "created_at": "2026-01-30T09:47:35.741851306Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T09:46:47.505481316Z",
+            "updated_at": null
+        },
+        {
+            "id": 257,
+            "type": "http",
+            "method": "GET",
+            "path": "/health",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "healthCheck",
+            "source_function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/handler/handler.go:25:19",
+            "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/handler/handler.go:40:19",
+            "outputs": [
+                {
+                    "id": 1550,
+                    "handler_id": 257,
+                    "type": "http_response",
+                    "label": "HTTP 200 JSON response (Content-Type: application/json)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/handler/handler.go:40:19",
+                    "function_name": "healthCheck",
+                    "description": "The handler returns an HTTP 200 response to the client with Content-Type header set to application/json and the JSON body '{\"status\":\"healthy\",\"service\":\"payment-worldpay\",\"provider\":\"worldpay\"}'.",
+                    "created_at": "2026-01-30T09:47:07.886897119Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T09:46:47.501074058Z",
+            "updated_at": null
+        },
+        {
+            "id": 258,
+            "type": "http",
+            "method": "POST",
+            "path": "/api/v1/charge",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "charge",
+            "source_function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/handler/handler.go:25:19",
+            "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/handler/handler.go:46:19",
+            "outputs": [
+                {
+                    "id": 1587,
+                    "handler_id": 258,
+                    "type": "http",
+                    "label": "POST {s.apiURL}/orders",
+                    "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/service/worldpay_service.go:115:27",
+                    "function_name": "createOrder",
+                    "description": "Outbound HTTP POST to the Worldpay API /orders endpoint. The request body is the JSON-marshaled model.WorldpayOrderRequest; request includes Content-Type: application/json and Authorization header (s.apiKey). The response body is read and unmarshaled into model.WorldpayOrderResponse.",
+                    "created_at": "2026-01-30T09:47:39.44333721Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1589,
+                    "handler_id": 258,
+                    "type": "http_response",
+                    "label": "HTTP 200 JSON (response.OK with model.ChargeResponse)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/handler/handler.go:46:19",
+                    "function_name": "charge",
+                    "description": "On successful processing of the charge (either simulated success or successful/authorized Worldpay order), the handler returns an HTTP 200 response containing the model.ChargeResponse JSON (fields: Success, TransactionID, Status, optional ErrorMessage).",
+                    "created_at": "2026-01-30T09:47:39.446775977Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1586,
+                    "handler_id": 258,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request (response.Error with badRequestError for invalid JSON)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/handler/handler.go:46:19",
+                    "function_name": "charge",
+                    "description": "If the request body cannot be decoded as JSON into model.ChargeRequest, the handler returns an HTTP Bad Request error response.",
+                    "created_at": "2026-01-30T09:47:39.439915807Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1585,
+                    "handler_id": 258,
+                    "type": "http_response",
+                    "label": "HTTP 405 Method Not Allowed (response.Error with methodNotAllowedError)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/handler/handler.go:46:19",
+                    "function_name": "charge",
+                    "description": "If the incoming request uses a method other than POST, the handler returns an HTTP error response indicating Method Not Allowed.",
+                    "created_at": "2026-01-30T09:47:39.4277897Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1588,
+                    "handler_id": 258,
+                    "type": "http_response",
+                    "label": "HTTP error response (response.Error with error from worldpayService.Charge)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/handler/handler.go:46:19",
+                    "function_name": "charge",
+                    "description": "If worldpayService.Charge returns an error, the handler returns an HTTP error response to the client based on that error.",
+                    "created_at": "2026-01-30T09:47:39.445202788Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T09:46:47.503507463Z",
+            "updated_at": null
+        },
+        {
+            "id": 261,
+            "type": "http",
+            "method": "POST",
+            "path": "/api/v1/payment-methods",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "paymentMethods",
+            "source_function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/handler/handler.go:25:19",
+            "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/handler/handler.go:92:19",
+            "outputs": [
+                {
+                    "id": 1572,
+                    "handler_id": 261,
+                    "type": "http_response",
+                    "label": "HTTP 200 response with JSON list of payment methods",
+                    "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/handler/handler.go:92:19",
+                    "function_name": "paymentMethods",
+                    "description": "When handling a GET with a valid user_id, the handler returns an HTTP 200 response to the client containing the list of payment methods (possibly an empty list) returned from the service.",
+                    "created_at": "2026-01-30T09:47:33.811206201Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1575,
+                    "handler_id": 261,
+                    "type": "http_response",
+                    "label": "HTTP 201 Created with created payment method",
+                    "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/handler/handler.go:92:19",
+                    "function_name": "paymentMethods",
+                    "description": "After successfully creating (mocking) a payment method in memory, the handler returns an HTTP 201 Created response to the client containing the created PaymentMethod.",
+                    "created_at": "2026-01-30T09:47:33.815920826Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1573,
+                    "handler_id": 261,
+                    "type": "http_response",
+                    "label": "HTTP error response (400 Bad Request) - invalid request body",
+                    "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/handler/handler.go:92:19",
+                    "function_name": "paymentMethods",
+                    "description": "If the incoming POST request body cannot be decoded as the expected CreatePaymentMethodRequest JSON, the handler returns an HTTP error response indicating an invalid request body.",
+                    "created_at": "2026-01-30T09:47:33.812802946Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1570,
+                    "handler_id": 261,
+                    "type": "http_response",
+                    "label": "HTTP error response (400 Bad Request) - user_id is required",
+                    "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/handler/handler.go:92:19",
+                    "function_name": "paymentMethods",
+                    "description": "If the incoming GET request does not include the required `user_id` query parameter, the handler returns an HTTP error response to the client indicating that `user_id` is required.",
+                    "created_at": "2026-01-30T09:47:33.795535502Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1576,
+                    "handler_id": 261,
+                    "type": "http_response",
+                    "label": "HTTP error response (405 Method Not Allowed)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/handler/handler.go:92:19",
+                    "function_name": "paymentMethods",
+                    "description": "If the incoming request uses an HTTP method other than GET or POST, the handler returns an HTTP error response indicating the method is not allowed.",
+                    "created_at": "2026-01-30T09:47:33.81753922Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1571,
+                    "handler_id": 261,
+                    "type": "other",
+                    "label": "Read payment methods from in-memory store",
+                    "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/service/worldpay_service.go:260:27",
+                    "function_name": "GetPaymentMethods",
+                    "description": "WorldpayService.GetPaymentMethods reads the service's in-memory map (s.paymentMethods) for the given userID and returns the stored slice of PaymentMethod (may be empty). This is an internal memory read (no external DB or network calls).",
+                    "created_at": "2026-01-30T09:47:33.807515058Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1574,
+                    "handler_id": 261,
+                    "type": "other",
+                    "label": "Store new payment method in in-memory map",
+                    "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/service/worldpay_service.go:230:27",
+                    "function_name": "CreatePaymentMethod",
+                    "description": "WorldpayService.CreatePaymentMethod constructs a new PaymentMethod object (mock token, timestamps, etc.) and appends it to the service's in-memory map at s.paymentMethods[UserID]. This mutates in-process memory state (no external DB or network call).",
+                    "created_at": "2026-01-30T09:47:33.814313691Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T09:46:47.506292621Z",
+            "updated_at": null
+        },
+        {
+            "id": 259,
+            "type": "http",
+            "method": "POST",
+            "path": "/api/v1/refund",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "refund",
+            "source_function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/handler/handler.go:25:19",
+            "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/handler/handler.go:71:19",
+            "outputs": [
+                {
+                    "id": 1565,
+                    "handler_id": 259,
+                    "type": "http",
+                    "label": "POST {apiURL}/orders/{transaction_id}/refund",
+                    "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/service/worldpay_service.go:166:27",
+                    "function_name": "Refund",
+                    "description": "Outbound HTTP POST to the Worldpay API endpoint /orders/{transaction_id}/refund. The request body is JSON with at least {\"orderCode\": transaction_id} and optionally an \"amount\" in minor units. Headers set: Content-Type: application/json and Authorization: s.apiKey. The request is created with http.NewRequestWithContext and executed via s.httpClient.Do.",
+                    "created_at": "2026-01-30T09:47:31.747403357Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1566,
+                    "handler_id": 259,
+                    "type": "http_response",
+                    "label": "HTTP 200 JSON response (refund result)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/handler/handler.go:71:19",
+                    "function_name": "refund",
+                    "description": "On successful handling (worldpayService.Refund returns a result and no error), the handler writes an HTTP 200 response to the client containing the RefundResponse (Success, RefundID, Status) using response.OK.",
+                    "created_at": "2026-01-30T09:47:31.761264212Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1568,
+                    "handler_id": 259,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request response (invalid request body)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/handler/handler.go:71:19",
+                    "function_name": "refund",
+                    "description": "If the request body cannot be decoded into the RefundRequest structure (JSON decode fails), the handler returns a bad-request error to the client via response.Error.",
+                    "created_at": "2026-01-30T09:47:31.76578289Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1567,
+                    "handler_id": 259,
+                    "type": "http_response",
+                    "label": "HTTP 405 Method Not Allowed response",
+                    "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/handler/handler.go:71:19",
+                    "function_name": "refund",
+                    "description": "If the incoming request method is not POST, the handler returns a method-not-allowed error to the client via response.Error.",
+                    "created_at": "2026-01-30T09:47:31.763610267Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1569,
+                    "handler_id": 259,
+                    "type": "http_response",
+                    "label": "HTTP error response (service error)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/handler/handler.go:71:19",
+                    "function_name": "refund",
+                    "description": "If worldpayService.Refund returns an error, the handler returns an error response to the client via response.Error. (Note: in the provided Refund implementation it returns a RefundResponse and nil error in normal and simulated paths, but this branch is present in the handler.)",
+                    "created_at": "2026-01-30T09:47:31.767656266Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T09:46:47.504572371Z",
+            "updated_at": null
+        },
+        {
+            "id": 262,
+            "type": "http",
+            "method": "POST",
+            "path": "/api/v1/tokens",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "createToken",
+            "source_function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/handler/handler.go:25:19",
+            "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/handler/handler.go:127:19",
+            "outputs": [
+                {
+                    "id": 1559,
+                    "handler_id": 262,
+                    "type": "http",
+                    "label": "HTTP POST to {apiURL}/tokens (Worldpay token creation)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/service/worldpay_service.go:269:27",
+                    "function_name": "CreateToken",
+                    "description": "A POST request is made to the Worldpay API /tokens endpoint with a JSON body containing the card paymentInstrument and with Content-Type: application/json and Authorization header set to the service apiKey. This is the external call that requests a token from Worldpay.",
+                    "created_at": "2026-01-30T09:47:28.826996469Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1560,
+                    "handler_id": 262,
+                    "type": "http_response",
+                    "label": "HTTP 201 Created JSON response",
+                    "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/handler/handler.go:127:19",
+                    "function_name": "createToken",
+                    "description": "On success, the handler returns an HTTP 201 Created response to the client with a JSON body {\"token_id\": \"\u003ctoken\u003e\"} containing the token (either returned by Worldpay or a locally-generated mock token).",
+                    "created_at": "2026-01-30T09:47:28.840596679Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1562,
+                    "handler_id": 262,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request (invalid JSON body)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/handler/handler.go:127:19",
+                    "function_name": "createToken",
+                    "description": "If the request body cannot be decoded as JSON, the handler returns an HTTP error response for a bad request (response.Error with badRequestError).",
+                    "created_at": "2026-01-30T09:47:28.84404541Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1563,
+                    "handler_id": 262,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request (missing payment_instrument)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/handler/handler.go:127:19",
+                    "function_name": "createToken",
+                    "description": "If the decoded request JSON does not include a payment_instrument, the handler returns an HTTP error response for a bad request (response.Error with badRequestError).",
+                    "created_at": "2026-01-30T09:47:28.845169221Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1561,
+                    "handler_id": 262,
+                    "type": "http_response",
+                    "label": "HTTP error response for non-POST method (method not allowed)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/handler/handler.go:127:19",
+                    "function_name": "createToken",
+                    "description": "If the incoming request method is not POST, the handler returns an HTTP error response indicating the method is not allowed (triggered by response.Error with methodNotAllowedError).",
+                    "created_at": "2026-01-30T09:47:28.842562768Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1564,
+                    "handler_id": 262,
+                    "type": "http_response",
+                    "label": "HTTP error response when token creation fails",
+                    "function_id": "/home/evan/Code/rinder/services/payment-worldpay/internal/handler/handler.go:127:19",
+                    "function_name": "createToken",
+                    "description": "If the Worldpay service returns an error from CreateToken, the handler forwards an HTTP error response to the client via response.Error(w, err). The exact status/code depends on the error and response.Error implementation.",
+                    "created_at": "2026-01-30T09:47:28.84632707Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T09:46:47.507144045Z",
+            "updated_at": null
+        }
+    ]
+}

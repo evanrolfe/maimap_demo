@@ -1,0 +1,601 @@
+{
+    "id": 10,
+    "name": "service-analytics",
+    "git_repo_url": "/home/evan/Code/rinder/services/analytics",
+    "entrypoint_path": "cmd/main.go",
+    "entrypoint_function": "main",
+    "git_org_url": "github.com/rinder",
+    "git_commit": null,
+    "created_at": "2026-01-21T10:22:45.668404999Z",
+    "updated_at": "2026-01-21T10:22:48.62892047Z",
+    "status": "analyzing-completed",
+    "handlers": [
+        {
+            "id": 322,
+            "type": "http",
+            "method": "GET",
+            "path": "/api/v1/analytics/events/",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "getEventsByType",
+            "source_function_id": "/home/evan/Code/rinder/services/analytics/internal/handler/handler.go:28:19",
+            "function_id": "/home/evan/Code/rinder/services/analytics/internal/handler/handler.go:133:19",
+            "outputs": [
+                {
+                    "id": 1890,
+                    "handler_id": 322,
+                    "type": "database",
+                    "label": "SELECT id, event_type, entity_id, COALESCE(user_id, ''), metadata, created_at FROM events WHERE event_type = $1 ORDER BY created_at DESC LIMIT $2",
+                    "function_id": "/home/evan/Code/rinder/services/analytics/internal/repository/analytics_repository.go:196:31",
+                    "function_name": "GetEventsByType",
+                    "description": "A SQL query is executed against the service database to retrieve up to `limit` analytics events matching the requested event type. Parameters passed: eventType, limit.",
+                    "created_at": "2026-01-30T10:31:18.566439178Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1891,
+                    "handler_id": 322,
+                    "type": "http_response",
+                    "label": "HTTP 200 JSON response with events",
+                    "function_id": "/home/evan/Code/rinder/services/analytics/internal/handler/handler.go:133:19",
+                    "function_name": "getEventsByType",
+                    "description": "If events are successfully retrieved, the handler writes an HTTP 200 response to the client containing the list of analytics events (serialized, typically as JSON).",
+                    "created_at": "2026-01-30T10:31:18.57958138Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1893,
+                    "handler_id": 322,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request response (event type is required)",
+                    "function_id": "/home/evan/Code/rinder/services/analytics/internal/handler/handler.go:133:19",
+                    "function_name": "getEventsByType",
+                    "description": "If the event type cannot be extracted from the request path (empty), the handler returns an HTTP error response indicating a bad request (event type required).",
+                    "created_at": "2026-01-30T10:31:18.583482338Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1892,
+                    "handler_id": 322,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request response (method not allowed)",
+                    "function_id": "/home/evan/Code/rinder/services/analytics/internal/handler/handler.go:133:19",
+                    "function_name": "getEventsByType",
+                    "description": "If the incoming request method is not GET, the handler returns an HTTP error response indicating a bad request (the code is produced by response.Error with a BadRequest error).",
+                    "created_at": "2026-01-30T10:31:18.582139436Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1894,
+                    "handler_id": 322,
+                    "type": "http_response",
+                    "label": "HTTP error response propagated from service/repository (e.g. 500)",
+                    "function_id": "/home/evan/Code/rinder/services/analytics/internal/handler/handler.go:133:19",
+                    "function_name": "getEventsByType",
+                    "description": "If the repository or service returns an error (for example a database error while querying events), the handler writes an HTTP error response to the client with the status/code derived from the returned error.",
+                    "created_at": "2026-01-30T10:31:18.584769303Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:30:35.115421983Z",
+            "updated_at": null
+        },
+        {
+            "id": 320,
+            "type": "http",
+            "method": "GET",
+            "path": "/api/v1/analytics/events/counts",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "getEventCounts",
+            "source_function_id": "/home/evan/Code/rinder/services/analytics/internal/handler/handler.go:28:19",
+            "function_id": "/home/evan/Code/rinder/services/analytics/internal/handler/handler.go:93:19",
+            "outputs": [
+                {
+                    "id": 1877,
+                    "handler_id": 320,
+                    "type": "database",
+                    "label": "SELECT event_type, COUNT(*) as count FROM events GROUP BY event_type ORDER BY count DESC",
+                    "function_id": "/home/evan/Code/rinder/services/analytics/internal/repository/analytics_repository.go:65:31",
+                    "function_name": "GetEventCounts",
+                    "description": "A SQL query is executed against the configured database to count events grouped by event_type, returning rows of (event_type, count).",
+                    "created_at": "2026-01-30T10:31:05.195041822Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1878,
+                    "handler_id": 320,
+                    "type": "http_response",
+                    "label": "HTTP 200 JSON response (response.OK)",
+                    "function_id": "/home/evan/Code/rinder/services/analytics/internal/handler/handler.go:93:19",
+                    "function_name": "getEventCounts",
+                    "description": "On success the handler writes an HTTP 200 response containing the list of event counts (counts serialized in the response body).",
+                    "created_at": "2026-01-30T10:31:05.208172465Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1880,
+                    "handler_id": 320,
+                    "type": "http_response",
+                    "label": "HTTP error response: Database query failure (internal server error)",
+                    "function_id": "/home/evan/Code/rinder/services/analytics/internal/handler/handler.go:93:19",
+                    "function_name": "getEventCounts",
+                    "description": "If the database query (QueryContext) fails, the repository returns an error and the handler sends an HTTP error response (internal server error) to the client.",
+                    "created_at": "2026-01-30T10:31:05.213148289Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1879,
+                    "handler_id": 320,
+                    "type": "http_response",
+                    "label": "HTTP error response: Method not allowed (BadRequest)",
+                    "function_id": "/home/evan/Code/rinder/services/analytics/internal/handler/handler.go:93:19",
+                    "function_name": "getEventCounts",
+                    "description": "If the incoming request method is not GET the handler returns an HTTP error response (bad request / method not allowed) to the client.",
+                    "created_at": "2026-01-30T10:31:05.2112879Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1881,
+                    "handler_id": 320,
+                    "type": "http_response",
+                    "label": "HTTP error response: Row scan failure (internal server error)",
+                    "function_id": "/home/evan/Code/rinder/services/analytics/internal/handler/handler.go:93:19",
+                    "function_name": "getEventCounts",
+                    "description": "If scanning rows into the event count structure fails while iterating result rows, the repository returns an error and the handler sends an HTTP error response (internal server error) to the client.",
+                    "created_at": "2026-01-30T10:31:05.214748499Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:30:35.112619407Z",
+            "updated_at": null
+        },
+        {
+            "id": 321,
+            "type": "http",
+            "method": "GET",
+            "path": "/api/v1/analytics/events/recent",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "getRecentEvents",
+            "source_function_id": "/home/evan/Code/rinder/services/analytics/internal/handler/handler.go:28:19",
+            "function_id": "/home/evan/Code/rinder/services/analytics/internal/handler/handler.go:109:19",
+            "outputs": [
+                {
+                    "id": 1887,
+                    "handler_id": 321,
+                    "type": "database",
+                    "label": "SELECT id, event_type, entity_id, COALESCE(user_id, ''), metadata, created_at FROM events ORDER BY created_at DESC LIMIT $1",
+                    "function_id": "/home/evan/Code/rinder/services/analytics/internal/repository/analytics_repository.go:170:31",
+                    "function_name": "GetRecentEvents",
+                    "description": "The repository executes a SQL query (r.db.QueryContext) against the configured database to fetch the most recent events, using the provided limit as the query parameter.",
+                    "created_at": "2026-01-30T10:31:15.446722655Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1888,
+                    "handler_id": 321,
+                    "type": "http_response",
+                    "label": "HTTP 200 JSON response with events (response.OK)",
+                    "function_id": "/home/evan/Code/rinder/services/analytics/internal/handler/handler.go:109:19",
+                    "function_name": "getRecentEvents",
+                    "description": "When the repository successfully returns events, the handler writes an HTTP 200 response containing the serialized list of AnalyticsEvent objects returned from the database.",
+                    "created_at": "2026-01-30T10:31:15.450371054Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1886,
+                    "handler_id": 321,
+                    "type": "http_response",
+                    "label": "HTTP error response (BadRequest) for non-GET method",
+                    "function_id": "/home/evan/Code/rinder/services/analytics/internal/handler/handler.go:109:19",
+                    "function_name": "getRecentEvents",
+                    "description": "If the incoming HTTP request method is not GET, the handler returns an HTTP error response produced by response.Error using an errors.BadRequest value (client receives an error response without any DB or downstream calls).",
+                    "created_at": "2026-01-30T10:31:15.434684004Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1889,
+                    "handler_id": 321,
+                    "type": "http_response",
+                    "label": "HTTP error response (response.Error) on repository/service failure",
+                    "function_id": "/home/evan/Code/rinder/services/analytics/internal/handler/handler.go:109:19",
+                    "function_name": "getRecentEvents",
+                    "description": "If the repository or service returns an error (e.g. QueryContext or rows.Scan failure), the error propagates back to the handler and it writes an HTTP error response via response.Error (client receives an error response; no further external calls are made).",
+                    "created_at": "2026-01-30T10:31:15.452113551Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:30:35.113978341Z",
+            "updated_at": null
+        },
+        {
+            "id": 318,
+            "type": "http",
+            "method": "GET",
+            "path": "/api/v1/analytics/stats",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "getOverallStats",
+            "source_function_id": "/home/evan/Code/rinder/services/analytics/internal/handler/handler.go:28:19",
+            "function_id": "/home/evan/Code/rinder/services/analytics/internal/handler/handler.go:53:19",
+            "outputs": [
+                {
+                    "id": 1873,
+                    "handler_id": 318,
+                    "type": "database",
+                    "label": "SELECT COALESCE(...) FROM events",
+                    "function_id": "/home/evan/Code/rinder/services/analytics/internal/repository/analytics_repository.go:137:31",
+                    "function_name": "GetOverallStats",
+                    "description": "A single SQL query is executed against the service database to aggregate event counts (total_users, total_profiles, total_swipes, right_swipes, total_matches, total_media). The query is executed via QueryRowContext(...).Scan(...) to read the aggregated values.",
+                    "created_at": "2026-01-30T10:31:02.739210933Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1874,
+                    "handler_id": 318,
+                    "type": "http_response",
+                    "label": "HTTP 200 OK response with overall stats (response.OK)",
+                    "function_id": "/home/evan/Code/rinder/services/analytics/internal/handler/handler.go:53:19",
+                    "function_name": "getOverallStats",
+                    "description": "If analyticsService.GetOverallStats returns successfully, an HTTP 200 response is written to the client containing the OverallStats payload (the aggregated counts and derived rates).",
+                    "created_at": "2026-01-30T10:31:02.751784628Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1875,
+                    "handler_id": 318,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request response (method not allowed)",
+                    "function_id": "/home/evan/Code/rinder/services/analytics/internal/handler/handler.go:53:19",
+                    "function_name": "getOverallStats",
+                    "description": "If the incoming HTTP request method is not GET, the handler returns a Bad Request error response to the client using response.Error(...).",
+                    "created_at": "2026-01-30T10:31:02.754812279Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1876,
+                    "handler_id": 318,
+                    "type": "http_response",
+                    "label": "HTTP error response (internal server error when stats retrieval fails)",
+                    "function_id": "/home/evan/Code/rinder/services/analytics/internal/handler/handler.go:53:19",
+                    "function_name": "getOverallStats",
+                    "description": "If analyticsService.GetOverallStats (backed by the repository) returns an error (for example due to a database query failure), the handler returns an HTTP error response to the client via response.Error(...). The repository wraps DB failures as internal server errors.",
+                    "created_at": "2026-01-30T10:31:02.756694717Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:30:35.10774496Z",
+            "updated_at": null
+        },
+        {
+            "id": 319,
+            "type": "http",
+            "method": "GET",
+            "path": "/api/v1/analytics/stats/daily",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "getDailyStats",
+            "source_function_id": "/home/evan/Code/rinder/services/analytics/internal/handler/handler.go:28:19",
+            "function_id": "/home/evan/Code/rinder/services/analytics/internal/handler/handler.go:69:19",
+            "outputs": [
+                {
+                    "id": 1882,
+                    "handler_id": 319,
+                    "type": "database",
+                    "label": "SELECT (WITH daily_events ...) FROM events WHERE created_at \u003e= $1 AND created_at \u003c $2",
+                    "function_id": "/home/evan/Code/rinder/services/analytics/internal/repository/analytics_repository.go:91:31",
+                    "function_name": "GetDailyStats",
+                    "description": "A SQL query is executed against the events table that aggregates event counts per UTC date and event_type between the provided startDate and endDate (passed as parameters $1 and $2). The query is run via QueryContext on the repository's DB connection.",
+                    "created_at": "2026-01-30T10:31:12.874495196Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1885,
+                    "handler_id": 319,
+                    "type": "http_response",
+                    "label": "HTTP 200 OK JSON response with daily stats",
+                    "function_id": "/home/evan/Code/rinder/services/analytics/internal/handler/handler.go:69:19",
+                    "function_name": "getDailyStats",
+                    "description": "On success the handler returns an HTTP 200 response containing the daily statistics payload (the slice of DailyStats) to the client via response.OK.",
+                    "created_at": "2026-01-30T10:31:12.879347575Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1883,
+                    "handler_id": 319,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request (method not allowed)",
+                    "function_id": "/home/evan/Code/rinder/services/analytics/internal/handler/handler.go:69:19",
+                    "function_name": "getDailyStats",
+                    "description": "If the HTTP request method is not GET, the handler returns a Bad Request error response to the client (response.Error is invoked with an errors.BadRequest).",
+                    "created_at": "2026-01-30T10:31:12.877179862Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1884,
+                    "handler_id": 319,
+                    "type": "http_response",
+                    "label": "HTTP error response (e.g. 500) returned to client when service/repository returns an error",
+                    "function_id": "/home/evan/Code/rinder/services/analytics/internal/handler/handler.go:69:19",
+                    "function_name": "getDailyStats",
+                    "description": "If analyticsService.GetDailyStats (or the repository it calls) returns an error (for example due to the DB query failing), the handler forwards that error to the client using response.Error, resulting in an HTTP error response (the specific status depends on the error).",
+                    "created_at": "2026-01-30T10:31:12.878343054Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:30:35.110784969Z",
+            "updated_at": null
+        },
+        {
+            "id": 317,
+            "type": "http",
+            "method": "GET",
+            "path": "/health",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "healthCheck",
+            "source_function_id": "/home/evan/Code/rinder/services/analytics/internal/handler/handler.go:28:19",
+            "function_id": "/home/evan/Code/rinder/services/analytics/internal/handler/handler.go:40:19",
+            "outputs": [
+                {
+                    "id": 1862,
+                    "handler_id": 317,
+                    "type": "http_response",
+                    "label": "HTTP 200 JSON response",
+                    "function_id": "/home/evan/Code/rinder/services/analytics/internal/handler/handler.go:40:19",
+                    "function_name": "healthCheck",
+                    "description": "An HTTP 200 response is sent to the client with Content-Type: application/json and the JSON body {\"success\": true, \"data\": {\"status\":\"healthy\",\"service\":\"analytics\"}}.",
+                    "created_at": "2026-01-30T10:30:48.783894982Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:30:35.094717115Z",
+            "updated_at": null
+        },
+        {
+            "id": 329,
+            "type": "kafka",
+            "method": "",
+            "path": "match.created",
+            "source_function_name": "registerHandlerForTopic",
+            "function_name": "handleMatchCreated",
+            "source_function_id": "/home/evan/Code/rinder/services/analytics/internal/consumer/event_consumer.go:81:25",
+            "function_id": "/home/evan/Code/rinder/services/analytics/internal/consumer/event_consumer.go:190:25",
+            "outputs": [
+                {
+                    "id": 1866,
+                    "handler_id": 329,
+                    "type": "database",
+                    "label": "INSERT INTO events (event_type, entity_id, user_id, metadata, created_at) RETURNING id",
+                    "function_id": "/home/evan/Code/rinder/services/analytics/internal/repository/analytics_repository.go:49:31",
+                    "function_name": "RecordEvent",
+                    "description": "An analytics event is written to the database by inserting event_type, entity_id, user_id, metadata and created_at into the events table; the new event ID is returned and scanned into the event object.",
+                    "created_at": "2026-01-30T10:30:52.050587718Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:30:35.124479353Z",
+            "updated_at": null
+        },
+        {
+            "id": 330,
+            "type": "kafka",
+            "method": "",
+            "path": "match.deleted",
+            "source_function_name": "registerHandlerForTopic",
+            "function_name": "handleMatchDeleted",
+            "source_function_id": "/home/evan/Code/rinder/services/analytics/internal/consumer/event_consumer.go:81:25",
+            "function_id": "/home/evan/Code/rinder/services/analytics/internal/consumer/event_consumer.go:204:25",
+            "outputs": [
+                {
+                    "id": 1871,
+                    "handler_id": 330,
+                    "type": "database",
+                    "label": "INSERT INTO events (event_type, entity_id, user_id, metadata, created_at) VALUES ($1, $2, $3, $4, $5) RETURNING id",
+                    "function_id": "/home/evan/Code/rinder/services/analytics/internal/repository/analytics_repository.go:49:31",
+                    "function_name": "RecordEvent",
+                    "description": "An analytics event is persisted to the database by executing an INSERT into the events table; the newly inserted row's id is returned and scanned into the event object (QueryRowContext + Scan).",
+                    "created_at": "2026-01-30T10:30:57.924589158Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:30:35.125549071Z",
+            "updated_at": null
+        },
+        {
+            "id": 332,
+            "type": "kafka",
+            "method": "",
+            "path": "media.deleted",
+            "source_function_name": "registerHandlerForTopic",
+            "function_name": "handleMediaDeleted",
+            "source_function_id": "/home/evan/Code/rinder/services/analytics/internal/consumer/event_consumer.go:81:25",
+            "function_id": "/home/evan/Code/rinder/services/analytics/internal/consumer/event_consumer.go:232:25",
+            "outputs": [
+                {
+                    "id": 1863,
+                    "handler_id": 332,
+                    "type": "database",
+                    "label": "INSERT INTO events (event_type, entity_id, user_id, metadata, created_at) VALUES ($1, $2, $3, $4, $5) RETURNING id",
+                    "function_id": "/home/evan/Code/rinder/services/analytics/internal/repository/analytics_repository.go:49:31",
+                    "function_name": "RecordEvent",
+                    "description": "An analytics event is persisted to the database: a new row is inserted into the events table with event_type, entity_id, user_id, metadata (JSON stringified payload), and created_at; the new row's id is returned and scanned into the event object.",
+                    "created_at": "2026-01-30T10:30:49.518512696Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:30:35.128357057Z",
+            "updated_at": null
+        },
+        {
+            "id": 331,
+            "type": "kafka",
+            "method": "",
+            "path": "media.uploaded",
+            "source_function_name": "registerHandlerForTopic",
+            "function_name": "handleMediaUploaded",
+            "source_function_id": "/home/evan/Code/rinder/services/analytics/internal/consumer/event_consumer.go:81:25",
+            "function_id": "/home/evan/Code/rinder/services/analytics/internal/consumer/event_consumer.go:218:25",
+            "outputs": [
+                {
+                    "id": 1872,
+                    "handler_id": 331,
+                    "type": "database",
+                    "label": "INSERT INTO events (event_type, entity_id, user_id, metadata, created_at) VALUES ($1, $2, $3, $4, $5) RETURNING id",
+                    "function_id": "/home/evan/Code/rinder/services/analytics/internal/repository/analytics_repository.go:49:31",
+                    "function_name": "RecordEvent",
+                    "description": "An analytics event row is inserted into the events table with columns event_type, entity_id, user_id, metadata and created_at; the new row's id is returned and scanned into the event object.",
+                    "created_at": "2026-01-30T10:31:00.586747079Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:30:35.12698178Z",
+            "updated_at": null
+        },
+        {
+            "id": 325,
+            "type": "kafka",
+            "method": "",
+            "path": "profile.created",
+            "source_function_name": "registerHandlerForTopic",
+            "function_name": "handleProfileCreated",
+            "source_function_id": "/home/evan/Code/rinder/services/analytics/internal/consumer/event_consumer.go:81:25",
+            "function_id": "/home/evan/Code/rinder/services/analytics/internal/consumer/event_consumer.go:134:25",
+            "outputs": [
+                {
+                    "id": 1865,
+                    "handler_id": 325,
+                    "type": "database",
+                    "label": "INSERT INTO events (event_type, entity_id, user_id, metadata, created_at) VALUES ($1, $2, $3, $4, $5) RETURNING id",
+                    "function_id": "/home/evan/Code/rinder/services/analytics/internal/repository/analytics_repository.go:49:31",
+                    "function_name": "RecordEvent",
+                    "description": "An analytics event row is inserted into the events table. The database is called via QueryRowContext to execute the INSERT and return the newly created row id which is scanned into the event object.",
+                    "created_at": "2026-01-30T10:30:51.882853552Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:30:35.119324598Z",
+            "updated_at": null
+        },
+        {
+            "id": 327,
+            "type": "kafka",
+            "method": "",
+            "path": "profile.deleted",
+            "source_function_name": "registerHandlerForTopic",
+            "function_name": "handleProfileDeleted",
+            "source_function_id": "/home/evan/Code/rinder/services/analytics/internal/consumer/event_consumer.go:81:25",
+            "function_id": "/home/evan/Code/rinder/services/analytics/internal/consumer/event_consumer.go:162:25",
+            "outputs": [
+                {
+                    "id": 1867,
+                    "handler_id": 327,
+                    "type": "database",
+                    "label": "INSERT INTO events (event_type, entity_id, user_id, metadata, created_at) RETURNING id",
+                    "function_id": "/home/evan/Code/rinder/services/analytics/internal/repository/analytics_repository.go:49:31",
+                    "function_name": "RecordEvent",
+                    "description": "A new analytics event row is inserted into the database 'events' table with event_type, entity_id, user_id, metadata and created_at; the newly created row's id is returned and scanned into the event object.",
+                    "created_at": "2026-01-30T10:30:53.716270972Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:30:35.122264959Z",
+            "updated_at": null
+        },
+        {
+            "id": 326,
+            "type": "kafka",
+            "method": "",
+            "path": "profile.updated",
+            "source_function_name": "registerHandlerForTopic",
+            "function_name": "handleProfileUpdated",
+            "source_function_id": "/home/evan/Code/rinder/services/analytics/internal/consumer/event_consumer.go:81:25",
+            "function_id": "/home/evan/Code/rinder/services/analytics/internal/consumer/event_consumer.go:148:25",
+            "outputs": [
+                {
+                    "id": 1868,
+                    "handler_id": 326,
+                    "type": "database",
+                    "label": "INSERT INTO events (event_type, entity_id, user_id, metadata, created_at) VALUES ($1, $2, $3, $4, $5) RETURNING id",
+                    "function_id": "/home/evan/Code/rinder/services/analytics/internal/repository/analytics_repository.go:49:31",
+                    "function_name": "RecordEvent",
+                    "description": "An analytics event record is inserted into the events table (the new row id is returned via RETURNING and scanned into the event struct). The metadata field is populated with the JSON serialization of the profile updated event.",
+                    "created_at": "2026-01-30T10:30:54.647722134Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:30:35.120361367Z",
+            "updated_at": null
+        },
+        {
+            "id": 328,
+            "type": "kafka",
+            "method": "",
+            "path": "swipe.created",
+            "source_function_name": "registerHandlerForTopic",
+            "function_name": "handleSwipeCreated",
+            "source_function_id": "/home/evan/Code/rinder/services/analytics/internal/consumer/event_consumer.go:81:25",
+            "function_id": "/home/evan/Code/rinder/services/analytics/internal/consumer/event_consumer.go:176:25",
+            "outputs": [
+                {
+                    "id": 1870,
+                    "handler_id": 328,
+                    "type": "database",
+                    "label": "INSERT INTO events (event_type, entity_id, user_id, metadata, created_at) VALUES ($1, $2, $3, $4, $5) RETURNING id",
+                    "function_id": "/home/evan/Code/rinder/services/analytics/internal/repository/analytics_repository.go:49:31",
+                    "function_name": "RecordEvent",
+                    "description": "A new analytics event row is inserted into the events table and the generated id is returned into the event object.",
+                    "created_at": "2026-01-30T10:30:56.24723022Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:30:35.123407941Z",
+            "updated_at": null
+        },
+        {
+            "id": 323,
+            "type": "kafka",
+            "method": "",
+            "path": "user.created",
+            "source_function_name": "registerHandlerForTopic",
+            "function_name": "handleUserCreated",
+            "source_function_id": "/home/evan/Code/rinder/services/analytics/internal/consumer/event_consumer.go:81:25",
+            "function_id": "/home/evan/Code/rinder/services/analytics/internal/consumer/event_consumer.go:106:25",
+            "outputs": [
+                {
+                    "id": 1869,
+                    "handler_id": 323,
+                    "type": "database",
+                    "label": "INSERT INTO events (event_type, entity_id, user_id, metadata, created_at) RETURNING id",
+                    "function_id": "/home/evan/Code/rinder/services/analytics/internal/repository/analytics_repository.go:49:31",
+                    "function_name": "RecordEvent",
+                    "description": "An analytics event row is inserted into the events table with event_type, entity_id, user_id, metadata, and created_at; the newly created row id is returned via QueryRowContext/Scan.",
+                    "created_at": "2026-01-30T10:30:55.160060645Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:30:35.116802085Z",
+            "updated_at": null
+        },
+        {
+            "id": 324,
+            "type": "kafka",
+            "method": "",
+            "path": "user.updated",
+            "source_function_name": "registerHandlerForTopic",
+            "function_name": "handleUserUpdated",
+            "source_function_id": "/home/evan/Code/rinder/services/analytics/internal/consumer/event_consumer.go:81:25",
+            "function_id": "/home/evan/Code/rinder/services/analytics/internal/consumer/event_consumer.go:120:25",
+            "outputs": [
+                {
+                    "id": 1864,
+                    "handler_id": 324,
+                    "type": "database",
+                    "label": "INSERT INTO events (event_type, entity_id, user_id, metadata, created_at) VALUES ($1, $2, $3, $4, $5) RETURNING id",
+                    "function_id": "/home/evan/Code/rinder/services/analytics/internal/repository/analytics_repository.go:49:31",
+                    "function_name": "RecordEvent",
+                    "description": "An analytics event is inserted into the events table and the generated id is returned (RecordEvent executes the INSERT using QueryRowContext and Scan).",
+                    "created_at": "2026-01-30T10:30:50.757254049Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:30:35.118188238Z",
+            "updated_at": null
+        }
+    ]
+}

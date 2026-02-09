@@ -1,0 +1,381 @@
+{
+    "id": 20,
+    "name": "service-payment-stripe",
+    "git_repo_url": "/home/evan/Code/rinder/services/payment-stripe",
+    "entrypoint_path": "cmd/main.go",
+    "entrypoint_function": "main",
+    "git_org_url": "github.com/rinder",
+    "git_commit": null,
+    "created_at": "2026-01-30T09:45:37.495275322Z",
+    "updated_at": "2026-01-30T09:45:42.262594154Z",
+    "status": "analyzing-completed",
+    "handlers": [
+        {
+            "id": 252,
+            "type": "http",
+            "method": "ANY",
+            "path": "/health",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "healthCheck",
+            "source_function_id": "/home/evan/Code/rinder/services/payment-stripe/internal/handler/handler.go:25:19",
+            "function_id": "/home/evan/Code/rinder/services/payment-stripe/internal/handler/handler.go:37:19",
+            "outputs": [
+                {
+                    "id": 1524,
+                    "handler_id": 252,
+                    "type": "http_response",
+                    "label": "HTTP 200 JSON response",
+                    "function_id": "/home/evan/Code/rinder/services/payment-stripe/internal/handler/handler.go:37:19",
+                    "function_name": "healthCheck",
+                    "description": "An HTTP 200 response is returned to the client with Content-Type: application/json and body '{\"status\":\"healthy\",\"service\":\"payment-stripe\",\"provider\":\"stripe\"}'.",
+                    "created_at": "2026-01-30T09:46:26.096310089Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T09:46:08.809635226Z",
+            "updated_at": null
+        },
+        {
+            "id": 255,
+            "type": "http",
+            "method": "GET",
+            "path": "/api/v1/payment-methods",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "paymentMethods",
+            "source_function_id": "/home/evan/Code/rinder/services/payment-stripe/internal/handler/handler.go:25:19",
+            "function_id": "/home/evan/Code/rinder/services/payment-stripe/internal/handler/handler.go:89:19",
+            "outputs": [
+                {
+                    "id": 1533,
+                    "handler_id": 255,
+                    "type": "http_response",
+                    "label": "HTTP 200 OK (JSON list of payment methods)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-stripe/internal/handler/handler.go:89:19",
+                    "function_name": "paymentMethods",
+                    "description": "For a GET request with a valid 'user_id', the handler calls StripeService.GetPaymentMethods and returns an HTTP 200 OK response with a JSON array of payment methods (possibly an empty array) to the client (via response.OK).",
+                    "created_at": "2026-01-30T09:46:47.422953427Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1536,
+                    "handler_id": 255,
+                    "type": "http_response",
+                    "label": "HTTP 201 Created (JSON payment method)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-stripe/internal/handler/handler.go:89:19",
+                    "function_name": "paymentMethods",
+                    "description": "For a valid POST request, the handler calls StripeService.CreatePaymentMethod which returns a new payment method, and the handler returns an HTTP 201 Created response with the created payment method as JSON to the client (via response.Created).",
+                    "created_at": "2026-01-30T09:46:47.429989142Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1535,
+                    "handler_id": 255,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request (invalid request body)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-stripe/internal/handler/handler.go:89:19",
+                    "function_name": "paymentMethods",
+                    "description": "For a POST request whose body cannot be decoded into CreatePaymentMethodRequest (invalid JSON/body), the handler returns an HTTP 400 Bad Request error to the client (via response.Error).",
+                    "created_at": "2026-01-30T09:46:47.428157015Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1532,
+                    "handler_id": 255,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request (user_id is required)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-stripe/internal/handler/handler.go:89:19",
+                    "function_name": "paymentMethods",
+                    "description": "When the handler receives a GET request without the required query parameter 'user_id', it returns an HTTP 400 Bad Request error to the client (via response.Error).",
+                    "created_at": "2026-01-30T09:46:47.40989751Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1538,
+                    "handler_id": 255,
+                    "type": "http_response",
+                    "label": "HTTP 405 Method Not Allowed",
+                    "function_id": "/home/evan/Code/rinder/services/payment-stripe/internal/handler/handler.go:89:19",
+                    "function_name": "paymentMethods",
+                    "description": "If the request uses an HTTP method other than GET or POST, the handler returns an HTTP 405 Method Not Allowed error to the client (via response.Error with methodNotAllowedError).",
+                    "created_at": "2026-01-30T09:46:47.433206284Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1537,
+                    "handler_id": 255,
+                    "type": "http_response",
+                    "label": "HTTP error response (create service error forwarded to client)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-stripe/internal/handler/handler.go:89:19",
+                    "function_name": "paymentMethods",
+                    "description": "If StripeService.CreatePaymentMethod returns an error, the handler forwards that error to the client as an HTTP error response (via response.Error).",
+                    "created_at": "2026-01-30T09:46:47.43190732Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1534,
+                    "handler_id": 255,
+                    "type": "http_response",
+                    "label": "HTTP error response (service error forwarded to client)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-stripe/internal/handler/handler.go:89:19",
+                    "function_name": "paymentMethods",
+                    "description": "If StripeService.GetPaymentMethods returns an error, the handler forwards that error to the client as an HTTP error response (via response.Error).",
+                    "created_at": "2026-01-30T09:46:47.426047557Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T09:46:08.826425126Z",
+            "updated_at": null
+        },
+        {
+            "id": 253,
+            "type": "http",
+            "method": "POST",
+            "path": "/api/v1/charge",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "charge",
+            "source_function_id": "/home/evan/Code/rinder/services/payment-stripe/internal/handler/handler.go:25:19",
+            "function_id": "/home/evan/Code/rinder/services/payment-stripe/internal/handler/handler.go:43:19",
+            "outputs": [
+                {
+                    "id": 1546,
+                    "handler_id": 253,
+                    "type": "http",
+                    "label": "Stripe API: Create Customer (customer.New)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-stripe/internal/service/stripe_service.go:246:25",
+                    "function_name": "getOrCreateCustomer",
+                    "description": "The service attempts to create a Stripe Customer by calling the Stripe API via the Stripe client library (customer.New). This is an outbound HTTP request to Stripe.",
+                    "created_at": "2026-01-30T09:47:05.548245218Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1547,
+                    "handler_id": 253,
+                    "type": "http",
+                    "label": "Stripe API: Create PaymentIntent (paymentintent.New)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-stripe/internal/service/stripe_service.go:41:25",
+                    "function_name": "Charge",
+                    "description": "The service creates a Stripe PaymentIntent (possibly confirming it immediately if a payment method ID is provided) by calling the Stripe API via the Stripe client library (paymentintent.New). This is an outbound HTTP request to Stripe.",
+                    "created_at": "2026-01-30T09:47:05.549544425Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1549,
+                    "handler_id": 253,
+                    "type": "http_response",
+                    "label": "HTTP 200 JSON response (charge result)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-stripe/internal/handler/handler.go:43:19",
+                    "function_name": "charge",
+                    "description": "On successful processing (including simulated success when no payment method is provided), the handler returns an HTTP 200 response with the ChargeResponse JSON payload to the client.",
+                    "created_at": "2026-01-30T09:47:05.552076732Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1545,
+                    "handler_id": 253,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request (invalid request body)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-stripe/internal/handler/handler.go:43:19",
+                    "function_name": "charge",
+                    "description": "If the request body cannot be decoded as JSON into the charge request model, the handler returns an HTTP 400-like error response to the client.",
+                    "created_at": "2026-01-30T09:47:05.546385353Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1548,
+                    "handler_id": 253,
+                    "type": "http_response",
+                    "label": "HTTP error response (error from stripe service)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-stripe/internal/handler/handler.go:43:19",
+                    "function_name": "charge",
+                    "description": "If the stripe service returns an error result, the handler returns an HTTP error response to the client containing the error information.",
+                    "created_at": "2026-01-30T09:47:05.550990918Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1544,
+                    "handler_id": 253,
+                    "type": "http_response",
+                    "label": "HTTP error response (method not allowed)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-stripe/internal/handler/handler.go:43:19",
+                    "function_name": "charge",
+                    "description": "If the incoming request is not POST, the handler returns an HTTP error response indicating the method is not allowed to the client.",
+                    "created_at": "2026-01-30T09:47:05.5323829Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T09:46:08.822976773Z",
+            "updated_at": null
+        },
+        {
+            "id": 256,
+            "type": "http",
+            "method": "POST",
+            "path": "/api/v1/payment-methods",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "paymentMethods",
+            "source_function_id": "/home/evan/Code/rinder/services/payment-stripe/internal/handler/handler.go:25:19",
+            "function_id": "/home/evan/Code/rinder/services/payment-stripe/internal/handler/handler.go:89:19",
+            "outputs": [
+                {
+                    "id": 1554,
+                    "handler_id": 256,
+                    "type": "http_response",
+                    "label": "HTTP 200 OK with JSON list of payment methods (response.OK)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-stripe/internal/handler/handler.go:89:19",
+                    "function_name": "paymentMethods",
+                    "description": "On a successful GET with a user_id, the handler writes an HTTP 200 response containing the list (possibly empty) of payment methods returned by StripeService.GetPaymentMethods.",
+                    "created_at": "2026-01-30T09:47:10.874637669Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1556,
+                    "handler_id": 256,
+                    "type": "http_response",
+                    "label": "HTTP 201 Created with created payment method (response.Created)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-stripe/internal/handler/handler.go:89:19",
+                    "function_name": "paymentMethods",
+                    "description": "On a successful POST that creates a payment method, the handler returns an HTTP 201 Created response containing the created payment method object to the HTTP client via response.Created.",
+                    "created_at": "2026-01-30T09:47:10.877557199Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1552,
+                    "handler_id": 256,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request (invalid request body)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-stripe/internal/handler/handler.go:89:19",
+                    "function_name": "paymentMethods",
+                    "description": "If the POST request body cannot be decoded into model.CreatePaymentMethodRequest, the handler returns a 400 Bad Request response to the HTTP client via response.Error.",
+                    "created_at": "2026-01-30T09:47:10.870120063Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1551,
+                    "handler_id": 256,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request (user_id is required)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-stripe/internal/handler/handler.go:89:19",
+                    "function_name": "paymentMethods",
+                    "description": "If the query parameter `user_id` is missing on a GET request, the handler returns a 400 Bad Request response to the HTTP client via response.Error.",
+                    "created_at": "2026-01-30T09:47:10.857396855Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1553,
+                    "handler_id": 256,
+                    "type": "http_response",
+                    "label": "HTTP 405 Method Not Allowed",
+                    "function_id": "/home/evan/Code/rinder/services/payment-stripe/internal/handler/handler.go:89:19",
+                    "function_name": "paymentMethods",
+                    "description": "If the incoming HTTP method is not GET or POST, the handler returns a 405 Method Not Allowed response to the HTTP client via response.Error.",
+                    "created_at": "2026-01-30T09:47:10.873081691Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1555,
+                    "handler_id": 256,
+                    "type": "http_response",
+                    "label": "HTTP error response forwarded from service (response.Error)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-stripe/internal/handler/handler.go:89:19",
+                    "function_name": "paymentMethods",
+                    "description": "If h.stripeService.GetPaymentMethods or h.stripeService.CreatePaymentMethod returns an error, the handler forwards that error into an HTTP error response to the client via response.Error. (The handler does not itself convert service errors into any other external call.)",
+                    "created_at": "2026-01-30T09:47:10.87628082Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1558,
+                    "handler_id": 256,
+                    "type": "other",
+                    "label": "Append created payment method to in-memory paymentMethods map",
+                    "function_id": "/home/evan/Code/rinder/services/payment-stripe/internal/service/stripe_service.go:209:25",
+                    "function_name": "CreatePaymentMethod",
+                    "description": "StripeService.CreatePaymentMethod constructs a new payment method object and appends it to the in-memory map s.paymentMethods[req.UserID], mutating server memory (no external DB or network interaction).",
+                    "created_at": "2026-01-30T09:47:10.880017703Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1557,
+                    "handler_id": 256,
+                    "type": "other",
+                    "label": "Read in-memory paymentMethods map",
+                    "function_id": "/home/evan/Code/rinder/services/payment-stripe/internal/service/stripe_service.go:237:25",
+                    "function_name": "GetPaymentMethods",
+                    "description": "StripeService.GetPaymentMethods reads from the in-memory map s.paymentMethods[userID] and returns the slice (or an empty slice) — this is an internal in-memory read (not a DB or network call).",
+                    "created_at": "2026-01-30T09:47:10.87887792Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T09:46:08.828192422Z",
+            "updated_at": null
+        },
+        {
+            "id": 254,
+            "type": "http",
+            "method": "POST",
+            "path": "/api/v1/refund",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "refund",
+            "source_function_id": "/home/evan/Code/rinder/services/payment-stripe/internal/handler/handler.go:25:19",
+            "function_id": "/home/evan/Code/rinder/services/payment-stripe/internal/handler/handler.go:68:19",
+            "outputs": [
+                {
+                    "id": 1541,
+                    "handler_id": 254,
+                    "type": "http",
+                    "label": "HTTP request to Stripe Refund API (refund.New)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-stripe/internal/service/stripe_service.go:149:25",
+                    "function_name": "Refund",
+                    "description": "The service calls the Stripe library to create a refund using the provided PaymentIntent (transaction id). This results in an outbound HTTP request to Stripe's Refunds API with parameters PaymentIntent, optional Amount (in cents) for partial refunds, and optional Reason. This happens when refund.New(params) succeeds (r, err := refund.New(params)).",
+                    "created_at": "2026-01-30T09:46:51.179556217Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1542,
+                    "handler_id": 254,
+                    "type": "http_response",
+                    "label": "HTTP 200 OK response with refund result",
+                    "function_id": "/home/evan/Code/rinder/services/payment-stripe/internal/handler/handler.go:68:19",
+                    "function_name": "refund",
+                    "description": "When the StripeService returns a RefundResponse (either from a successful Stripe API call or a simulated successful refund), the handler writes an HTTP 200 OK response containing the refund result to the client via response.OK.",
+                    "created_at": "2026-01-30T09:46:51.181084394Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1540,
+                    "handler_id": 254,
+                    "type": "http_response",
+                    "label": "HTTP error response (400 Bad Request - invalid JSON body)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-stripe/internal/handler/handler.go:68:19",
+                    "function_name": "refund",
+                    "description": "If the request body cannot be decoded as the expected RefundRequest JSON, the handler writes an HTTP 400-style error response to the client via response.Error.",
+                    "created_at": "2026-01-30T09:46:51.17667281Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1539,
+                    "handler_id": 254,
+                    "type": "http_response",
+                    "label": "HTTP error response (method not allowed)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-stripe/internal/handler/handler.go:68:19",
+                    "function_name": "refund",
+                    "description": "If the incoming HTTP request method is not POST, the handler writes an HTTP error response (method not allowed) to the client via response.Error.",
+                    "created_at": "2026-01-30T09:46:51.164031127Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1543,
+                    "handler_id": 254,
+                    "type": "http_response",
+                    "label": "HTTP error response (service error returned by StripeService)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-stripe/internal/handler/handler.go:68:19",
+                    "function_name": "refund",
+                    "description": "If StripeService.Refund returns an error (not handled by the service as a simulated success), the handler writes an HTTP error response to the client via response.Error containing that error.",
+                    "created_at": "2026-01-30T09:46:51.182222758Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T09:46:08.824562041Z",
+            "updated_at": null
+        }
+    ]
+}

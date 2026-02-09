@@ -1,0 +1,808 @@
+{
+    "id": 13,
+    "name": "service-notification",
+    "git_repo_url": "/home/evan/Code/rinder/services/notification",
+    "entrypoint_path": "cmd/main.go",
+    "entrypoint_function": "main",
+    "git_org_url": "github.com/rinder",
+    "git_commit": null,
+    "created_at": "2026-01-21T10:24:04.941535279Z",
+    "updated_at": "2026-01-21T10:24:08.646485275Z",
+    "status": "analyzing-completed",
+    "handlers": [
+        {
+            "id": 334,
+            "type": "http",
+            "method": "ANY",
+            "path": "/api/v1/notifications",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "handleNotifications",
+            "source_function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:28:19",
+            "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:47:19",
+            "outputs": [
+                {
+                    "id": 1965,
+                    "handler_id": 334,
+                    "type": "database",
+                    "label": "INSERT INTO notifications (...) VALUES (...)",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/repository/notification_repository.go:24:34",
+                    "function_name": "Create",
+                    "description": "Create a new notification row in the notifications table when preference checks allow creation.",
+                    "created_at": "2026-01-30T10:33:18.542805334Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1964,
+                    "handler_id": 334,
+                    "type": "database",
+                    "label": "SELECT FROM notification_preferences WHERE user_id = $1",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/repository/notification_repository.go:220:34",
+                    "function_name": "GetPreferences",
+                    "description": "When creating a notification, the service queries the notification_preferences table to load the user's notification preferences.",
+                    "created_at": "2026-01-30T10:33:18.541590179Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1960,
+                    "handler_id": 334,
+                    "type": "database",
+                    "label": "SELECT FROM notifications WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/repository/notification_repository.go:96:34",
+                    "function_name": "GetByUserID",
+                    "description": "Fetch notifications for a given user (Get notifications list used by GET /api/v1/notifications).",
+                    "created_at": "2026-01-30T10:33:18.535977019Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1966,
+                    "handler_id": 334,
+                    "type": "database",
+                    "label": "SELECT FROM push_tokens WHERE user_id = $1",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/repository/notification_repository.go:314:34",
+                    "function_name": "GetPushTokens",
+                    "description": "When push notifications are enabled, the service queries push_tokens to retrieve the user's push tokens.",
+                    "created_at": "2026-01-30T10:33:18.544826526Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1967,
+                    "handler_id": 334,
+                    "type": "database",
+                    "label": "UPDATE notifications SET status = $1, updated_at = $2 WHERE id = $3",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/repository/notification_repository.go:194:34",
+                    "function_name": "UpdateStatus",
+                    "description": "After attempting to send push notifications (or regardless), the notification's status is updated to 'sent' in the notifications table.",
+                    "created_at": "2026-01-30T10:33:18.546193965Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1962,
+                    "handler_id": 334,
+                    "type": "http_response",
+                    "label": "HTTP 200 OK (response.OK - notifications JSON)",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:65:19",
+                    "function_name": "getNotifications",
+                    "description": "On success, GET /api/v1/notifications returns a 200 HTTP response with the notifications (JSON array) to the client.",
+                    "created_at": "2026-01-30T10:33:18.538804613Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1969,
+                    "handler_id": 334,
+                    "type": "http_response",
+                    "label": "HTTP 201 Created (response.Created - created notification JSON or null)",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:104:19",
+                    "function_name": "createNotification",
+                    "description": "On success (or when the service returns nil without error because the user disabled that notification type), POST /api/v1/notifications returns a 201 HTTP response with the created notification (or null) to the client.",
+                    "created_at": "2026-01-30T10:33:18.548668036Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1963,
+                    "handler_id": 334,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request (response.Error - Invalid request body or missing required fields)",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:104:19",
+                    "function_name": "createNotification",
+                    "description": "For POST /api/v1/notifications, if the request body is invalid JSON or required fields (user_id, type, title) are missing, a 400 HTTP response is returned to the client.",
+                    "created_at": "2026-01-30T10:33:18.540063899Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1958,
+                    "handler_id": 334,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request (response.Error - Method not allowed)",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:47:19",
+                    "function_name": "handleNotifications",
+                    "description": "If the request method is not GET or POST, the handler returns a 400 HTTP response to the client.",
+                    "created_at": "2026-01-30T10:33:18.53144639Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1959,
+                    "handler_id": 334,
+                    "type": "http_response",
+                    "label": "HTTP 401 Unauthorized (response.Error - User not authenticated)",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:65:19",
+                    "function_name": "getNotifications",
+                    "description": "For GET /api/v1/notifications, if the X-User-ID header is missing the handler returns a 401 HTTP response to the client.",
+                    "created_at": "2026-01-30T10:33:18.534423062Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1957,
+                    "handler_id": 334,
+                    "type": "http_response",
+                    "label": "HTTP 404 Not Found (response.Error - Not found)",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:47:19",
+                    "function_name": "handleNotifications",
+                    "description": "If the request path is not exactly /api/v1/notifications, the handler returns a 404 HTTP response to the client.",
+                    "created_at": "2026-01-30T10:33:18.518493325Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1968,
+                    "handler_id": 334,
+                    "type": "http_response",
+                    "label": "HTTP 500 Internal Server Error (response.Error - Failed to create notification)",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:104:19",
+                    "function_name": "createNotification",
+                    "description": "If the service reports an error while creating the notification (repository errors etc.), the POST handler returns a 500 HTTP response to the client.",
+                    "created_at": "2026-01-30T10:33:18.547421543Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1961,
+                    "handler_id": 334,
+                    "type": "http_response",
+                    "label": "HTTP 500 Internal Server Error (response.Error - Failed to get notifications)",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:65:19",
+                    "function_name": "getNotifications",
+                    "description": "If fetching notifications from the repository returns an error, a 500 HTTP response is returned to the client for GET /api/v1/notifications.",
+                    "created_at": "2026-01-30T10:33:18.537321481Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:32:15.257178547Z",
+            "updated_at": null
+        },
+        {
+            "id": 335,
+            "type": "http",
+            "method": "ANY",
+            "path": "/api/v1/notifications/",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "handleNotificationByID",
+            "source_function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:28:19",
+            "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:134:19",
+            "outputs": [
+                {
+                    "id": 1934,
+                    "handler_id": 335,
+                    "type": "database",
+                    "label": "SELECT id, user_id, type, title, body, data, status, read_at, created_at, updated_at FROM notifications WHERE id = $1",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/repository/notification_repository.go:57:34",
+                    "function_name": "GetByID",
+                    "description": "Repository queries the notifications table to retrieve the notification by ID to verify existence and ownership.",
+                    "created_at": "2026-01-30T10:33:09.624883939Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1937,
+                    "handler_id": 335,
+                    "type": "database",
+                    "label": "UPDATE notifications SET status = 'read', read_at = $1, updated_at = $1 WHERE id = $2",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/repository/notification_repository.go:160:34",
+                    "function_name": "MarkAsRead",
+                    "description": "Repository executes an UPDATE to mark the notification as read (sets status and timestamps).",
+                    "created_at": "2026-01-30T10:33:09.62953816Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1939,
+                    "handler_id": 335,
+                    "type": "http_response",
+                    "label": "HTTP 200 OK response (Marked as read)",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:158:19",
+                    "function_name": "markAsRead",
+                    "description": "When the notification is successfully verified and updated to 'read', the handler returns an HTTP 200 OK response with JSON {\"message\": \"Marked as read\"}.",
+                    "created_at": "2026-01-30T10:33:09.633560112Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1933,
+                    "handler_id": 335,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request response (Method not allowed)",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:134:19",
+                    "function_name": "handleNotificationByID",
+                    "description": "If the HTTP method is not PATCH, the handler returns a 400 Bad Request response indicating the method is not allowed.",
+                    "created_at": "2026-01-30T10:33:09.623037184Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1932,
+                    "handler_id": 335,
+                    "type": "http_response",
+                    "label": "HTTP 401 Unauthorized response (User not authenticated)",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:134:19",
+                    "function_name": "handleNotificationByID",
+                    "description": "If the X-User-ID header is missing from the request, the handler returns a 401 Unauthorized response to the client.",
+                    "created_at": "2026-01-30T10:33:09.619706117Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1936,
+                    "handler_id": 335,
+                    "type": "http_response",
+                    "label": "HTTP 403 Forbidden response (Not authorized)",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:158:19",
+                    "function_name": "markAsRead",
+                    "description": "If the notification exists but its user_id differs from the X-User-ID header (ownership mismatch), the handler returns a 403 Forbidden response to the client.",
+                    "created_at": "2026-01-30T10:33:09.62814552Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1935,
+                    "handler_id": 335,
+                    "type": "http_response",
+                    "label": "HTTP 404 Not Found response (Notification not found - DB returned no rows)",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:158:19",
+                    "function_name": "markAsRead",
+                    "description": "If the repository reports the notification does not exist (no rows), the handler returns a 404 Not Found response to the client.",
+                    "created_at": "2026-01-30T10:33:09.626355706Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1931,
+                    "handler_id": 335,
+                    "type": "http_response",
+                    "label": "HTTP 404 Not Found response (Notification not found - invalid path)",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:134:19",
+                    "function_name": "handleNotificationByID",
+                    "description": "If the request path does not contain a single notification ID (empty or contains '/'), the handler returns a 404 Not Found response to the client.",
+                    "created_at": "2026-01-30T10:33:09.606664101Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1938,
+                    "handler_id": 335,
+                    "type": "http_response",
+                    "label": "HTTP 500 Internal Server Error response (Failed to mark as read)",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:158:19",
+                    "function_name": "markAsRead",
+                    "description": "If an unexpected error occurs while retrieving the notification or updating it (database error or other internal error), the handler returns a 500 Internal Server Error response to the client.",
+                    "created_at": "2026-01-30T10:33:09.630907489Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:32:15.259260487Z",
+            "updated_at": null
+        },
+        {
+            "id": 336,
+            "type": "http",
+            "method": "ANY",
+            "path": "/api/v1/notifications/count",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "GetUnreadCount",
+            "source_function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:28:19",
+            "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:177:19",
+            "outputs": [
+                {
+                    "id": 1897,
+                    "handler_id": 336,
+                    "type": "database",
+                    "label": "SELECT COUNT(*) FROM notifications WHERE user_id = $1 AND status != 'read'",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/repository/notification_repository.go:144:34",
+                    "function_name": "GetUnreadCount",
+                    "description": "A SQL query is executed against the service database to count notifications for the given user that are not marked 'read'.",
+                    "created_at": "2026-01-30T10:32:46.775423983Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1898,
+                    "handler_id": 336,
+                    "type": "http_response",
+                    "label": "HTTP 200 JSON response with {\"count\": \u003cint\u003e}",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:177:19",
+                    "function_name": "GetUnreadCount",
+                    "description": "On success the handler returns an HTTP 200 response to the client with a JSON body containing the unread notification count.",
+                    "created_at": "2026-01-30T10:32:46.790338348Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1899,
+                    "handler_id": 336,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request response (Method not allowed)",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:177:19",
+                    "function_name": "GetUnreadCount",
+                    "description": "If the incoming request method is not GET the handler returns an HTTP error response indicating a bad request / method not allowed.",
+                    "created_at": "2026-01-30T10:32:46.792434141Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1900,
+                    "handler_id": 336,
+                    "type": "http_response",
+                    "label": "HTTP 401 Unauthorized response (User not authenticated)",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:177:19",
+                    "function_name": "GetUnreadCount",
+                    "description": "If the X-User-ID header is missing the handler returns an HTTP unauthorized response to the client.",
+                    "created_at": "2026-01-30T10:32:46.794552555Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1901,
+                    "handler_id": 336,
+                    "type": "http_response",
+                    "label": "HTTP 500 Internal Server Error response (Failed to get unread count)",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:177:19",
+                    "function_name": "GetUnreadCount",
+                    "description": "If retrieving the unread count from the repository fails, the handler returns an HTTP 500 Internal Server Error response to the client.",
+                    "created_at": "2026-01-30T10:32:46.795498137Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:32:15.260400058Z",
+            "updated_at": null
+        },
+        {
+            "id": 338,
+            "type": "http",
+            "method": "ANY",
+            "path": "/api/v1/notifications/preferences",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "handlePreferences",
+            "source_function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:28:19",
+            "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:221:19",
+            "outputs": [
+                {
+                    "id": 1925,
+                    "handler_id": 338,
+                    "type": "database",
+                    "label": "INSERT INTO notification_preferences ... ON CONFLICT (user_id) DO UPDATE",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/repository/notification_repository.go:257:34",
+                    "function_name": "SavePreferences",
+                    "description": "When saving updated preferences (PUT), the repository executes an INSERT ... ON CONFLICT DO UPDATE statement (Exec) to insert or update the notification_preferences row for the user.",
+                    "created_at": "2026-01-30T10:33:02.123079912Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1924,
+                    "handler_id": 338,
+                    "type": "database",
+                    "label": "SELECT FROM notification_preferences WHERE user_id = $1",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/repository/notification_repository.go:220:34",
+                    "function_name": "GetPreferences",
+                    "description": "When retrieving preferences (both GET and as part of UpdatePreferences), the repository executes a SELECT query against the notification_preferences table to fetch the row for the given user_id. If no row is found (sql.ErrNoRows), default preferences are returned without further DB writes.",
+                    "created_at": "2026-01-30T10:33:02.1219536Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1922,
+                    "handler_id": 338,
+                    "type": "http_response",
+                    "label": "HTTP 200 OK (GET preferences)",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:221:19",
+                    "function_name": "handlePreferences",
+                    "description": "On a successful GET, the handler returns an HTTP 200 response with the NotificationPreference payload to the client.",
+                    "created_at": "2026-01-30T10:33:02.11996384Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1923,
+                    "handler_id": 338,
+                    "type": "http_response",
+                    "label": "HTTP 200 OK (PUT updated preferences)",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:221:19",
+                    "function_name": "handlePreferences",
+                    "description": "On a successful PUT, after updating and saving preferences, the handler returns an HTTP 200 response with the updated NotificationPreference payload to the client.",
+                    "created_at": "2026-01-30T10:33:02.120985498Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1918,
+                    "handler_id": 338,
+                    "type": "http_response",
+                    "label": "HTTP error response (Bad Request - invalid JSON body)",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:221:19",
+                    "function_name": "handlePreferences",
+                    "description": "For PUT requests, if the request body cannot be decoded as JSON into the UpdatePreferencesRequest, the handler returns a 400 Bad Request response to the client.",
+                    "created_at": "2026-01-30T10:33:02.110134486Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1919,
+                    "handler_id": 338,
+                    "type": "http_response",
+                    "label": "HTTP error response (Bad Request - method not allowed)",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:221:19",
+                    "function_name": "handlePreferences",
+                    "description": "If the HTTP method is not GET or PUT, the handler returns a 400 Bad Request (method not allowed) response to the client.",
+                    "created_at": "2026-01-30T10:33:02.112982106Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1920,
+                    "handler_id": 338,
+                    "type": "http_response",
+                    "label": "HTTP error response (Internal Server Error on GetPreferences)",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:221:19",
+                    "function_name": "handlePreferences",
+                    "description": "If the NotificationService.GetPreferences call returns an error while handling a GET request, the handler returns an internal server error response to the client.",
+                    "created_at": "2026-01-30T10:33:02.115082583Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1921,
+                    "handler_id": 338,
+                    "type": "http_response",
+                    "label": "HTTP error response (Internal Server Error on UpdatePreferences)",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:221:19",
+                    "function_name": "handlePreferences",
+                    "description": "If the NotificationService.UpdatePreferences call returns an error while handling a PUT request, the handler returns an internal server error response to the client.",
+                    "created_at": "2026-01-30T10:33:02.11874697Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1917,
+                    "handler_id": 338,
+                    "type": "http_response",
+                    "label": "HTTP error response (Unauthorized)",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:221:19",
+                    "function_name": "handlePreferences",
+                    "description": "If the X-User-ID header is missing, the handler returns an unauthorized error response to the client.",
+                    "created_at": "2026-01-30T10:33:02.096610708Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:32:15.263229906Z",
+            "updated_at": null
+        },
+        {
+            "id": 339,
+            "type": "http",
+            "method": "ANY",
+            "path": "/api/v1/notifications/push-token",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "handlePushToken",
+            "source_function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:28:19",
+            "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:257:19",
+            "outputs": [
+                {
+                    "id": 1953,
+                    "handler_id": 339,
+                    "type": "database",
+                    "label": "DELETE FROM push_tokens WHERE user_id = $1 AND platform = $2",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/repository/notification_repository.go:348:34",
+                    "function_name": "DeletePushToken",
+                    "description": "When unregistering a push token (DELETE) and a platform is provided, a DELETE is executed to remove the push token row for the given user and platform.",
+                    "created_at": "2026-01-30T10:33:15.649734886Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1949,
+                    "handler_id": 339,
+                    "type": "database",
+                    "label": "INSERT INTO push_tokens ... ON CONFLICT (user_id, platform) DO UPDATE SET token = $3, updated_at = $6",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/repository/notification_repository.go:295:34",
+                    "function_name": "SavePushToken",
+                    "description": "When registering a push token (POST) and validation passes, an INSERT is executed to save the push token. If a row for (user_id, platform) already exists, the token and updated_at are updated instead.",
+                    "created_at": "2026-01-30T10:33:15.644388786Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1955,
+                    "handler_id": 339,
+                    "type": "http_response",
+                    "label": "HTTP 200 OK (Push token deleted)",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:257:19",
+                    "function_name": "handlePushToken",
+                    "description": "On successful completion of UnregisterPushToken (i.e. the token row was deleted), the handler returns an HTTP 200 OK response with a JSON message {\"message\": \"Push token deleted\"}.",
+                    "created_at": "2026-01-30T10:33:15.652579275Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1951,
+                    "handler_id": 339,
+                    "type": "http_response",
+                    "label": "HTTP 200 OK (Push token registered)",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:257:19",
+                    "function_name": "handlePushToken",
+                    "description": "On successful completion of RegisterPushToken (i.e. the token was saved/updated successfully), the handler returns an HTTP 200 OK response with a JSON message {\"message\": \"Push token registered\"}.",
+                    "created_at": "2026-01-30T10:33:15.647228144Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1956,
+                    "handler_id": 339,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request (Method not allowed)",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:257:19",
+                    "function_name": "handlePushToken",
+                    "description": "If the request method is not POST or DELETE, the handler returns an HTTP 400 Bad Request response indicating the method is not allowed.",
+                    "created_at": "2026-01-30T10:33:15.653837232Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1948,
+                    "handler_id": 339,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request (invalid JSON body)",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:257:19",
+                    "function_name": "handlePushToken",
+                    "description": "For POST requests, if the request body cannot be JSON-decoded into model.RegisterTokenRequest, the handler returns an HTTP 400 Bad Request response to the client.",
+                    "created_at": "2026-01-30T10:33:15.642374778Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1952,
+                    "handler_id": 339,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request (platform required)",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:257:19",
+                    "function_name": "handlePushToken",
+                    "description": "For DELETE requests, if the 'platform' query parameter is missing, the handler returns an HTTP 400 Bad Request response to the client.",
+                    "created_at": "2026-01-30T10:33:15.6484684Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1947,
+                    "handler_id": 339,
+                    "type": "http_response",
+                    "label": "HTTP 401 Unauthorized",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:257:19",
+                    "function_name": "handlePushToken",
+                    "description": "If the X-User-ID header is missing, the handler returns an HTTP 401 Unauthorized response to the client and stops processing.",
+                    "created_at": "2026-01-30T10:33:15.628275352Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1950,
+                    "handler_id": 339,
+                    "type": "http_response",
+                    "label": "HTTP 500 Internal Server Error (register failed)",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:257:19",
+                    "function_name": "handlePushToken",
+                    "description": "If RegisterPushToken returns an error (for example validation failed or the database Exec failed), the handler returns an HTTP 500 Internal Server Error response to the client.",
+                    "created_at": "2026-01-30T10:33:15.645879987Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1954,
+                    "handler_id": 339,
+                    "type": "http_response",
+                    "label": "HTTP 500 Internal Server Error (unregister failed)",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:257:19",
+                    "function_name": "handlePushToken",
+                    "description": "If UnregisterPushToken returns an error (for example the database Exec failed), the handler returns an HTTP 500 Internal Server Error response to the client.",
+                    "created_at": "2026-01-30T10:33:15.651266322Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:32:15.265936077Z",
+            "updated_at": null
+        },
+        {
+            "id": 337,
+            "type": "http",
+            "method": "ANY",
+            "path": "/api/v1/notifications/read-all",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "MarkAllAsRead",
+            "source_function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:28:19",
+            "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:199:19",
+            "outputs": [
+                {
+                    "id": 1904,
+                    "handler_id": 337,
+                    "type": "database",
+                    "label": "UPDATE notifications SET status = 'read', read_at = $1, updated_at = $1 WHERE user_id = $2 AND status != 'read'",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/repository/notification_repository.go:177:34",
+                    "function_name": "MarkAllAsRead",
+                    "description": "The repository executes an UPDATE statement marking all notifications for the given user_id that are not already 'read' as 'read', setting read_at and updated_at to the current time.",
+                    "created_at": "2026-01-30T10:32:53.947640322Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1906,
+                    "handler_id": 337,
+                    "type": "http_response",
+                    "label": "HTTP 200 OK JSON response",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:199:19",
+                    "function_name": "MarkAllAsRead",
+                    "description": "On success (notifications marked as read), the handler returns an HTTP 200 OK response with a JSON body {\"message\": \"All notifications marked as read\"}.",
+                    "created_at": "2026-01-30T10:32:53.950318897Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1902,
+                    "handler_id": 337,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request response",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:199:19",
+                    "function_name": "MarkAllAsRead",
+                    "description": "If the incoming HTTP request method is not POST, the handler returns an HTTP 400 Bad Request response to the client.",
+                    "created_at": "2026-01-30T10:32:53.941791797Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1903,
+                    "handler_id": 337,
+                    "type": "http_response",
+                    "label": "HTTP 401 Unauthorized response",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:199:19",
+                    "function_name": "MarkAllAsRead",
+                    "description": "If the X-User-ID header is missing, the handler returns an HTTP 401 Unauthorized response to the client.",
+                    "created_at": "2026-01-30T10:32:53.945994591Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1905,
+                    "handler_id": 337,
+                    "type": "http_response",
+                    "label": "HTTP 500 Internal Server Error response",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:199:19",
+                    "function_name": "MarkAllAsRead",
+                    "description": "If the repository returns an error when updating notifications, the handler returns an HTTP 500 Internal Server Error response to the client.",
+                    "created_at": "2026-01-30T10:32:53.949167122Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:32:15.261354221Z",
+            "updated_at": null
+        },
+        {
+            "id": 333,
+            "type": "http",
+            "method": "ANY",
+            "path": "/health",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "Health",
+            "source_function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:28:19",
+            "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:39:19",
+            "outputs": [
+                {
+                    "id": 1895,
+                    "handler_id": 333,
+                    "type": "http_response",
+                    "label": "HTTP 200 JSON response {\"status\":\"healthy\",\"service\":\"notification\"}",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/handler/handler.go:39:19",
+                    "function_name": "Health",
+                    "description": "The Health handler writes an HTTP 200 response with a JSON body indicating the service is healthy.",
+                    "created_at": "2026-01-30T10:32:30.389810772Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:32:15.243826413Z",
+            "updated_at": null
+        },
+        {
+            "id": 340,
+            "type": "kafka",
+            "method": "",
+            "path": "match.created",
+            "source_function_name": "NewMatchConsumer",
+            "function_name": "handleMatchCreated",
+            "source_function_id": "/home/evan/Code/rinder/services/notification/internal/consumer/match_consumer.go:24:6",
+            "function_id": "/home/evan/Code/rinder/services/notification/internal/consumer/match_consumer.go:61:25",
+            "outputs": [
+                {
+                    "id": 1910,
+                    "handler_id": 340,
+                    "type": "database",
+                    "label": "INSERT INTO notifications (...) VALUES (...)",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/repository/notification_repository.go:24:34",
+                    "function_name": "Create",
+                    "description": "Insert a new notification row for user1 into the notifications table.",
+                    "created_at": "2026-01-30T10:32:58.981201805Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1914,
+                    "handler_id": 340,
+                    "type": "database",
+                    "label": "INSERT INTO notifications (...) VALUES (...)",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/repository/notification_repository.go:24:34",
+                    "function_name": "Create",
+                    "description": "Insert a new notification row for user2 into the notifications table.",
+                    "created_at": "2026-01-30T10:32:58.986228541Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1909,
+                    "handler_id": 340,
+                    "type": "database",
+                    "label": "SELECT FROM notification_preferences WHERE user_id = $1",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/repository/notification_repository.go:220:34",
+                    "function_name": "GetPreferences",
+                    "description": "Query the notification_preferences table to get user1's notification preferences.",
+                    "created_at": "2026-01-30T10:32:58.979338882Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1913,
+                    "handler_id": 340,
+                    "type": "database",
+                    "label": "SELECT FROM notification_preferences WHERE user_id = $1",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/repository/notification_repository.go:220:34",
+                    "function_name": "GetPreferences",
+                    "description": "Query the notification_preferences table to get user2's notification preferences.",
+                    "created_at": "2026-01-30T10:32:58.984901322Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1911,
+                    "handler_id": 340,
+                    "type": "database",
+                    "label": "SELECT FROM push_tokens WHERE user_id = $1",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/repository/notification_repository.go:314:34",
+                    "function_name": "GetPushTokens",
+                    "description": "Query the push_tokens table to retrieve user1's push tokens (only executed if push notifications are enabled for user1).",
+                    "created_at": "2026-01-30T10:32:58.982486219Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1915,
+                    "handler_id": 340,
+                    "type": "database",
+                    "label": "SELECT FROM push_tokens WHERE user_id = $1",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/repository/notification_repository.go:314:34",
+                    "function_name": "GetPushTokens",
+                    "description": "Query the push_tokens table to retrieve user2's push tokens (only executed if push notifications are enabled for user2).",
+                    "created_at": "2026-01-30T10:32:58.9876095Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1912,
+                    "handler_id": 340,
+                    "type": "database",
+                    "label": "UPDATE notifications SET status = $1, updated_at = $2 WHERE id = $3",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/repository/notification_repository.go:194:34",
+                    "function_name": "UpdateStatus",
+                    "description": "Update the notification row status to 'sent' for the notification created for user1.",
+                    "created_at": "2026-01-30T10:32:58.983695596Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1916,
+                    "handler_id": 340,
+                    "type": "database",
+                    "label": "UPDATE notifications SET status = $1, updated_at = $2 WHERE id = $3",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/repository/notification_repository.go:194:34",
+                    "function_name": "UpdateStatus",
+                    "description": "Update the notification row status to 'sent' for the notification created for user2.",
+                    "created_at": "2026-01-30T10:32:58.988875607Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1907,
+                    "handler_id": 340,
+                    "type": "http",
+                    "label": "HTTP GET /api/v1/users/{user1_id}",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/consumer/match_consumer.go:102:25",
+                    "function_name": "getUserName",
+                    "description": "An HTTP GET request is made to the user service to fetch user1's data (used to obtain the first name for a personalized notification).",
+                    "created_at": "2026-01-30T10:32:58.963347113Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1908,
+                    "handler_id": 340,
+                    "type": "http",
+                    "label": "HTTP GET /api/v1/users/{user2_id}",
+                    "function_id": "/home/evan/Code/rinder/services/notification/internal/consumer/match_consumer.go:102:25",
+                    "function_name": "getUserName",
+                    "description": "An HTTP GET request is made to the user service to fetch user2's data (used to obtain the first name for a personalized notification).",
+                    "created_at": "2026-01-30T10:32:58.975448353Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T10:32:15.269337851Z",
+            "updated_at": null
+        }
+    ]
+}

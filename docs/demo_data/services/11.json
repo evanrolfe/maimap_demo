@@ -1,0 +1,579 @@
+{
+    "id": 11,
+    "name": "service-matching",
+    "git_repo_url": "/home/evan/Code/rinder/services/matching",
+    "entrypoint_path": "cmd/main.go",
+    "entrypoint_function": "main",
+    "git_org_url": "github.com/rinder",
+    "git_commit": null,
+    "created_at": "2026-01-21T10:23:07.436190382Z",
+    "updated_at": "2026-01-21T10:23:09.09657659Z",
+    "status": "analyzing-completed",
+    "handlers": [
+        {
+            "id": 226,
+            "type": "http",
+            "method": "DELETE",
+            "path": "/api/v1/matches/",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "handleMatchByID",
+            "source_function_id": "/home/evan/Code/rinder/services/matching/internal/handler/handler.go:28:19",
+            "function_id": "/home/evan/Code/rinder/services/matching/internal/handler/handler.go:170:19",
+            "outputs": [
+                {
+                    "id": 1352,
+                    "handler_id": 226,
+                    "type": "database",
+                    "label": "DELETE FROM matches WHERE id = $1",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/repository/match_repository.go:149:27",
+                    "function_name": "DeleteMatch",
+                    "description": "Delete the match row with the given match ID from the matches table.",
+                    "created_at": "2026-01-30T08:57:33.621448956Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1349,
+                    "handler_id": 226,
+                    "type": "database",
+                    "label": "SELECT id, user1_id, user2_id, profile1_id, profile2_id, created_at, updated_at FROM matches WHERE id = $1",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/repository/match_repository.go:66:27",
+                    "function_name": "GetMatchByID",
+                    "description": "Lookup the match row by match ID to verify existence and retrieve user/profile IDs.",
+                    "created_at": "2026-01-30T08:57:33.61628306Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1355,
+                    "handler_id": 226,
+                    "type": "event",
+                    "label": "Publish MatchDeleted event to Kafka (TopicMatchDeleted, EventMatchDeleted)",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/service/matching_service.go:358:27",
+                    "function_name": "publishUnmatchEvent",
+                    "description": "After a successful delete, the service publishes an unmatch event containing match ID, user IDs, profile IDs and a timestamp to the configured event producer (Kafka topic TopicMatchDeleted with event type EventMatchDeleted).",
+                    "created_at": "2026-01-30T08:57:33.62681022Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1356,
+                    "handler_id": 226,
+                    "type": "http_response",
+                    "label": "HTTP 200 response (Successfully unmatched)",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/handler/handler.go:195:19",
+                    "function_name": "unmatch",
+                    "description": "On successful deletion and (attempted) event publish, the handler returns an HTTP 200 OK response with a JSON body {\"message\": \"Successfully unmatched\"} to the client.",
+                    "created_at": "2026-01-30T08:57:33.629329239Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1348,
+                    "handler_id": 226,
+                    "type": "http_response",
+                    "label": "HTTP 400 response (Method not allowed)",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/handler/handler.go:170:19",
+                    "function_name": "handleMatchByID",
+                    "description": "If the HTTP method is not DELETE, the handler returns an HTTP 400 Bad Request (method not allowed) response to the client.",
+                    "created_at": "2026-01-30T08:57:33.614167962Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1347,
+                    "handler_id": 226,
+                    "type": "http_response",
+                    "label": "HTTP 401 response (User not authenticated)",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/handler/handler.go:170:19",
+                    "function_name": "handleMatchByID",
+                    "description": "If the X-User-ID header is missing or empty, the handler returns an HTTP 401 Unauthorized error to the client.",
+                    "created_at": "2026-01-30T08:57:33.611193146Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1351,
+                    "handler_id": 226,
+                    "type": "http_response",
+                    "label": "HTTP 403 response (Not authorized to unmatch)",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/handler/handler.go:195:19",
+                    "function_name": "unmatch",
+                    "description": "If the match exists but the requesting user is neither user1 nor user2 on the match, the service returns an HTTP 403 Forbidden response to the client.",
+                    "created_at": "2026-01-30T08:57:33.619892727Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1353,
+                    "handler_id": 226,
+                    "type": "http_response",
+                    "label": "HTTP 404 response (Match not found) - delete affected 0 rows",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/handler/handler.go:195:19",
+                    "function_name": "unmatch",
+                    "description": "If the DELETE query reports 0 rows affected, the service treats this as the match not existing and returns HTTP 404 Not Found to the client.",
+                    "created_at": "2026-01-30T08:57:33.623485187Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1350,
+                    "handler_id": 226,
+                    "type": "http_response",
+                    "label": "HTTP 404 response (Match not found) - match missing",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/handler/handler.go:195:19",
+                    "function_name": "unmatch",
+                    "description": "If the match repository returns no row for the given match ID, the service returns an HTTP 404 Not Found response to the client.",
+                    "created_at": "2026-01-30T08:57:33.618245406Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1346,
+                    "handler_id": 226,
+                    "type": "http_response",
+                    "label": "HTTP 404 response (Match not found) - path invalid",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/handler/handler.go:170:19",
+                    "function_name": "handleMatchByID",
+                    "description": "If the request path after /api/v1/matches/ is empty or contains additional slashes, the handler returns an HTTP 404 Not Found error to the client.",
+                    "created_at": "2026-01-30T08:57:33.595963702Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1354,
+                    "handler_id": 226,
+                    "type": "http_response",
+                    "label": "HTTP 500 response (Failed to unmatch)",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/handler/handler.go:195:19",
+                    "function_name": "unmatch",
+                    "description": "If repository operations (SELECT or DELETE) or other server-side errors occur that are not specifically classified as 'not found' or 'not authorized', the handler returns HTTP 500 Internal Server Error to the client.",
+                    "created_at": "2026-01-30T08:57:33.625199579Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T08:56:32.866578142Z",
+            "updated_at": null
+        },
+        {
+            "id": 225,
+            "type": "http",
+            "method": "GET",
+            "path": "/api/v1/matches",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "handleMatches",
+            "source_function_id": "/home/evan/Code/rinder/services/matching/internal/handler/handler.go:28:19",
+            "function_id": "/home/evan/Code/rinder/services/matching/internal/handler/handler.go:142:19",
+            "outputs": [
+                {
+                    "id": 1338,
+                    "handler_id": 225,
+                    "type": "database",
+                    "label": "SELECT id, user1_id, user2_id, profile1_id, profile2_id, created_at, updated_at FROM matches WHERE user1_id = $1 OR user2_id = $1 ORDER BY created_at DESC",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/repository/match_repository.go:94:27",
+                    "function_name": "GetMatchesByUserID",
+                    "description": "Query executed to retrieve all match records for the given user ID (user appears as user1 or user2). This is performed by MatchRepository.GetMatchesByUserID via r.db.Query(query, userID).",
+                    "created_at": "2026-01-30T08:57:15.566280102Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1340,
+                    "handler_id": 225,
+                    "type": "http",
+                    "label": "HTTP GET /api/v1/profiles/{profileID}",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/service/matching_service.go:247:27",
+                    "function_name": "getProfileInfo",
+                    "description": "For each match record, the service issues an HTTP GET request to the profiles service to fetch profile details for the matched profile ID (s.profileClient.Get(ctx, fmt.Sprintf(\"/api/v1/profiles/%s\", profileID), nil)). This request is performed once per match (i.e., may be multiple such calls depending on number of matches).",
+                    "created_at": "2026-01-30T08:57:15.570358395Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1344,
+                    "handler_id": 225,
+                    "type": "http_response",
+                    "label": "HTTP 200 JSON response (OK with matches array)",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/handler/handler.go:142:19",
+                    "function_name": "handleMatches",
+                    "description": "On success, the handler returns an HTTP 200 response containing the JSON array of match responses (each includes matched user info and matched timestamp). If there are no matches, an empty array is returned.",
+                    "created_at": "2026-01-30T08:57:15.575474824Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1334,
+                    "handler_id": 225,
+                    "type": "http_response",
+                    "label": "HTTP 400 JSON response (Method not allowed)",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/handler/handler.go:142:19",
+                    "function_name": "handleMatches",
+                    "description": "If the incoming request method is not GET, the handler returns an HTTP error response (bad request) to the client.",
+                    "created_at": "2026-01-30T08:57:15.546654681Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1336,
+                    "handler_id": 225,
+                    "type": "http_response",
+                    "label": "HTTP 401 JSON response (User not authenticated)",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/handler/handler.go:142:19",
+                    "function_name": "handleMatches",
+                    "description": "If the X-User-ID header is missing, the handler returns an HTTP unauthorized error response to the client.",
+                    "created_at": "2026-01-30T08:57:15.562742605Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1342,
+                    "handler_id": 225,
+                    "type": "http_response",
+                    "label": "HTTP 500 JSON response (Failed to get matches)",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/handler/handler.go:142:19",
+                    "function_name": "handleMatches",
+                    "description": "If retrieving matches from the repository returns an error, the handler returns an HTTP internal server error response to the client.",
+                    "created_at": "2026-01-30T08:57:15.572890884Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T08:56:32.865285607Z",
+            "updated_at": null
+        },
+        {
+            "id": 224,
+            "type": "http",
+            "method": "GET",
+            "path": "/api/v1/swipe/queue",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "GetSwipeQueue",
+            "source_function_id": "/home/evan/Code/rinder/services/matching/internal/handler/handler.go:28:19",
+            "function_id": "/home/evan/Code/rinder/services/matching/internal/handler/handler.go:105:19",
+            "outputs": [
+                {
+                    "id": 1335,
+                    "handler_id": 224,
+                    "type": "database",
+                    "label": "REDIS SCAN keys pattern \"swipe:{userID}:*\"",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/repository/swipe_repository.go:102:27",
+                    "function_name": "GetSwipedProfiles",
+                    "description": "Scans Redis keys to find owner IDs that the given user has already swiped on (pattern: swipe:{swiper}:{owner}).",
+                    "created_at": "2026-01-30T08:57:15.546982179Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1337,
+                    "handler_id": 224,
+                    "type": "http",
+                    "label": "HTTP GET /api/v1/profiles?exclude_user={userID}\u0026limit={limit}",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/service/matching_service.go:281:27",
+                    "function_name": "fetchSwipeQueue",
+                    "description": "An HTTP GET request is made to the profile service to fetch candidate profiles (query params exclude_user and limit).",
+                    "created_at": "2026-01-30T08:57:15.564502963Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1339,
+                    "handler_id": 224,
+                    "type": "http_response",
+                    "label": "HTTP 200 JSON response (swipe queue)",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/handler/handler.go:105:19",
+                    "function_name": "GetSwipeQueue",
+                    "description": "On success the handler returns an HTTP 200 response containing the list of swipe queue profiles as JSON.",
+                    "created_at": "2026-01-30T08:57:15.568364397Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1341,
+                    "handler_id": 224,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request (Method not allowed)",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/handler/handler.go:105:19",
+                    "function_name": "GetSwipeQueue",
+                    "description": "If the incoming request method is not GET, the handler returns an HTTP 400 Bad Request response.",
+                    "created_at": "2026-01-30T08:57:15.571686817Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1343,
+                    "handler_id": 224,
+                    "type": "http_response",
+                    "label": "HTTP 401 Unauthorized (User not authenticated)",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/handler/handler.go:105:19",
+                    "function_name": "GetSwipeQueue",
+                    "description": "If the X-User-ID header is missing, the handler returns an HTTP 401 Unauthorized response.",
+                    "created_at": "2026-01-30T08:57:15.574236399Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1345,
+                    "handler_id": 224,
+                    "type": "http_response",
+                    "label": "HTTP 500 Internal Server Error (Failed to get swipe queue)",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/handler/handler.go:105:19",
+                    "function_name": "GetSwipeQueue",
+                    "description": "If fetching the swipe queue fails (for example the profile service call fails or unmarshalling fails), the handler returns an HTTP 500 Internal Server Error response.",
+                    "created_at": "2026-01-30T08:57:15.576620559Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T08:56:32.864076997Z",
+            "updated_at": null
+        },
+        {
+            "id": 222,
+            "type": "http",
+            "method": "GET",
+            "path": "/health",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "Health",
+            "source_function_id": "/home/evan/Code/rinder/services/matching/internal/handler/handler.go:28:19",
+            "function_id": "/home/evan/Code/rinder/services/matching/internal/handler/handler.go:37:19",
+            "outputs": [
+                {
+                    "id": 1333,
+                    "handler_id": 222,
+                    "type": "http_response",
+                    "label": "HTTP 200 JSON response",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/handler/handler.go:37:19",
+                    "function_name": "Health",
+                    "description": "An HTTP 200 response is written to the client with a JSON body: {\"status\":\"healthy\",\"service\":\"matching\"}.",
+                    "created_at": "2026-01-30T08:56:48.521761456Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T08:56:32.859541007Z",
+            "updated_at": null
+        },
+        {
+            "id": 223,
+            "type": "http",
+            "method": "POST",
+            "path": "/api/v1/swipe",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "Swipe",
+            "source_function_id": "/home/evan/Code/rinder/services/matching/internal/handler/handler.go:28:19",
+            "function_id": "/home/evan/Code/rinder/services/matching/internal/handler/handler.go:52:19",
+            "outputs": [
+                {
+                    "id": 1375,
+                    "handler_id": 223,
+                    "type": "database",
+                    "label": "INSERT INTO matches (...) RETURNING ...",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/repository/match_repository.go:23:27",
+                    "function_name": "CreateMatch",
+                    "description": "When creating a new match, insert a row into the matches table and return the created row (INSERT ... RETURNING).",
+                    "created_at": "2026-01-30T08:57:45.485355467Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1371,
+                    "handler_id": 223,
+                    "type": "database",
+                    "label": "INSERT INTO swipes (id, swiper_id, profile_id, owner_id, direction, created_at) ... ON CONFLICT (swiper_id, profile_id) DO UPDATE ...",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/repository/match_repository.go:182:27",
+                    "function_name": "RecordSwipeInDB",
+                    "description": "Attempt to record the swipe into PostgreSQL for history/analytics (INSERT ... ON CONFLICT DO UPDATE). This is attempted for every swipe but failure does not abort the overall operation.",
+                    "created_at": "2026-01-30T08:57:45.478502047Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1373,
+                    "handler_id": 223,
+                    "type": "database",
+                    "label": "SELECT EXISTS(...) FROM matches WHERE (user1_id = $1 AND user2_id = $2) OR (user1_id = $2 AND user2_id = $1)",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/repository/match_repository.go:130:27",
+                    "function_name": "MatchExists",
+                    "description": "If a mutual like is detected, check in PostgreSQL whether a match already exists between the two users (boolean EXISTS query).",
+                    "created_at": "2026-01-30T08:57:45.481734106Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1376,
+                    "handler_id": 223,
+                    "type": "event",
+                    "label": "Publish Kafka event to TopicMatchCreated (EventMatchCreated)",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/service/matching_service.go:341:27",
+                    "function_name": "publishMatchEvent",
+                    "description": "When a match is created, publish a match-created event to Kafka on the TopicMatchCreated with the match payload (MatchEvent).",
+                    "created_at": "2026-01-30T08:57:45.487033631Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1377,
+                    "handler_id": 223,
+                    "type": "event",
+                    "label": "Publish Kafka event to TopicSwipeCreated (EventSwipeLeft or EventSwipeRight)",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/service/matching_service.go:319:27",
+                    "function_name": "publishSwipeEvent",
+                    "description": "After processing any swipe, publish a swipe-created event to Kafka on the TopicSwipeCreated with the swipe payload (SwipeEvent). The event type is EventSwipeRight for likes or EventSwipeLeft for left swipes.",
+                    "created_at": "2026-01-30T08:57:45.488472971Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1374,
+                    "handler_id": 223,
+                    "type": "http",
+                    "label": "HTTP GET /api/v1/profiles/user/{userID}",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/service/matching_service.go:222:27",
+                    "function_name": "getSwiperProfile",
+                    "description": "If creating a match, the service calls the profile service to fetch the swiper's profile(s) via an HTTP GET to /api/v1/profiles/user/{userID} to obtain a profile ID for the match.",
+                    "created_at": "2026-01-30T08:57:45.483777903Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1366,
+                    "handler_id": 223,
+                    "type": "http_response",
+                    "label": "HTTP 201 Created (SwipeResponse returned)",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/handler/handler.go:52:19",
+                    "function_name": "Swipe",
+                    "description": "On success the handler returns an HTTP 201 Created response to the client containing the SwipeResponse (swipe object and match info if any).",
+                    "created_at": "2026-01-30T08:57:45.473465066Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1362,
+                    "handler_id": 223,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request (Direction must be 'right' or 'left')",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/handler/handler.go:52:19",
+                    "function_name": "Swipe",
+                    "description": "If the parsed request's Direction is not 'right' or 'left', the handler returns a 400 Bad Request response to the client.",
+                    "created_at": "2026-01-30T08:57:45.46721224Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1359,
+                    "handler_id": 223,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request (Invalid request body)",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/handler/handler.go:52:19",
+                    "function_name": "Swipe",
+                    "description": "If the request body cannot be decoded as the expected JSON, the handler returns a 400 Bad Request response to the client.",
+                    "created_at": "2026-01-30T08:57:45.46285512Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1357,
+                    "handler_id": 223,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request (Method not allowed)",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/handler/handler.go:52:19",
+                    "function_name": "Swipe",
+                    "description": "If the incoming HTTP method is not POST, the handler returns a 400 Bad Request response to the client.",
+                    "created_at": "2026-01-30T08:57:45.444385075Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1361,
+                    "handler_id": 223,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request (Owner ID is required)",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/handler/handler.go:52:19",
+                    "function_name": "Swipe",
+                    "description": "If the parsed request has an empty OwnerID, the handler returns a 400 Bad Request response to the client.",
+                    "created_at": "2026-01-30T08:57:45.465872502Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1360,
+                    "handler_id": 223,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request (Profile ID is required)",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/handler/handler.go:52:19",
+                    "function_name": "Swipe",
+                    "description": "If the parsed request has an empty ProfileID, the handler returns a 400 Bad Request response to the client.",
+                    "created_at": "2026-01-30T08:57:45.464467359Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1358,
+                    "handler_id": 223,
+                    "type": "http_response",
+                    "label": "HTTP 401 Unauthorized (User not authenticated)",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/handler/handler.go:52:19",
+                    "function_name": "Swipe",
+                    "description": "If the X-User-ID header is missing, the handler returns a 401 Unauthorized response to the client.",
+                    "created_at": "2026-01-30T08:57:45.460439449Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1364,
+                    "handler_id": 223,
+                    "type": "http_response",
+                    "label": "HTTP 409 Conflict (already swiped on this profile)",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/handler/handler.go:52:19",
+                    "function_name": "Swipe",
+                    "description": "If the service reports that the user has already swiped on this profile, the handler returns a 409 Conflict response to the client.",
+                    "created_at": "2026-01-30T08:57:45.47052544Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1365,
+                    "handler_id": 223,
+                    "type": "http_response",
+                    "label": "HTTP 500 Internal Server Error (Failed to process swipe)",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/handler/handler.go:52:19",
+                    "function_name": "Swipe",
+                    "description": "If an unexpected error occurs while processing the swipe, the handler returns a 500 Internal Server Error response to the client.",
+                    "created_at": "2026-01-30T08:57:45.472272667Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1370,
+                    "handler_id": 223,
+                    "type": "other",
+                    "label": "Redis EXPIRE likes:\u003cownerID\u003e 30d",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/repository/swipe_repository.go:26:27",
+                    "function_name": "RecordSwipe",
+                    "description": "If the swipe is a right like, set/reset the expiry on the likes set (likes:\u003cownerID\u003e) to 30 days in Redis. This is conditional on direction == 'right'.",
+                    "created_at": "2026-01-30T08:57:45.477512361Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1372,
+                    "handler_id": 223,
+                    "type": "other",
+                    "label": "Redis GET swipe:\u003clikerID\u003e:\u003clikedID\u003e (HasLiked)",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/repository/swipe_repository.go:65:27",
+                    "function_name": "HasLiked",
+                    "description": "When processing a right-swipe, check whether the other user has already liked this user by reading swipe:\u003clikerID\u003e:\u003clikedID\u003e from Redis (used to detect mutual like).",
+                    "created_at": "2026-01-30T08:57:45.479865822Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1367,
+                    "handler_id": 223,
+                    "type": "other",
+                    "label": "Redis GET swipe:\u003cswiperID\u003e:\u003cownerID\u003e",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/repository/swipe_repository.go:50:27",
+                    "function_name": "GetSwipe",
+                    "description": "Check whether a swipe already exists by fetching the key swipe:\u003cswiperID\u003e:\u003cownerID\u003e from Redis.",
+                    "created_at": "2026-01-30T08:57:45.474385364Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1369,
+                    "handler_id": 223,
+                    "type": "other",
+                    "label": "Redis SADD likes:\u003cownerID\u003e \u003c- swiperID",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/repository/swipe_repository.go:26:27",
+                    "function_name": "RecordSwipe",
+                    "description": "If the swipe direction is 'right' (a like), add the swiperID to the likes set for the owner (likes:\u003cownerID\u003e) in Redis. This is conditional on direction == 'right'.",
+                    "created_at": "2026-01-30T08:57:45.476404463Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1368,
+                    "handler_id": 223,
+                    "type": "other",
+                    "label": "Redis SET swipe:\u003cswiperID\u003e:\u003cownerID\u003e = \u003cdirection\u003e EX 30d",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/repository/swipe_repository.go:26:27",
+                    "function_name": "RecordSwipe",
+                    "description": "Record the swipe in Redis with a 30-day expiry (key swipe:\u003cswiperID\u003e:\u003cownerID\u003e set to 'right' or 'left'). This is performed for every swipe.",
+                    "created_at": "2026-01-30T08:57:45.475353266Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1363,
+                    "handler_id": 223,
+                    "type": "other",
+                    "label": "internal validation: cannot swipe on your own profile (error returned)",
+                    "function_id": "/home/evan/Code/rinder/services/matching/internal/handler/handler.go:52:19",
+                    "function_name": "Swipe",
+                    "description": "If the service detects the swiper is the owner (swiperID == ownerID), it returns an error which the handler turns into a 400 Bad Request response to the client.",
+                    "created_at": "2026-01-30T08:57:45.468728313Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T08:56:32.862487013Z",
+            "updated_at": null
+        }
+    ]
+}

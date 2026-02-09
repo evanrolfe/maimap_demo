@@ -1,0 +1,508 @@
+{
+    "id": 18,
+    "name": "service-payment-gateway",
+    "git_repo_url": "/home/evan/Code/rinder/services/payment-gateway",
+    "entrypoint_path": "cmd/main.go",
+    "entrypoint_function": "main",
+    "git_org_url": "github.com/rinder",
+    "git_commit": null,
+    "created_at": "2026-01-30T09:41:23.225010472Z",
+    "updated_at": "2026-01-30T09:41:27.264355061Z",
+    "status": "analyzing-completed",
+    "handlers": [
+        {
+            "id": 239,
+            "type": "http",
+            "method": "ANY",
+            "path": "/health",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "healthCheck",
+            "source_function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:25:19",
+            "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:41:19",
+            "outputs": [
+                {
+                    "id": 1460,
+                    "handler_id": 239,
+                    "type": "http_response",
+                    "label": "HTTP 200 JSON response with body {\"status\":\"healthy\",\"service\":\"payment-gateway\"}",
+                    "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:41:19",
+                    "function_name": "healthCheck",
+                    "description": "The HTTP handler sets Content-Type: application/json, sends HTTP 200 OK, and writes the JSON body indicating the service is healthy.",
+                    "created_at": "2026-01-30T09:42:18.822153421Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T09:41:57.959066561Z",
+            "updated_at": null
+        },
+        {
+            "id": 242,
+            "type": "http",
+            "method": "GET",
+            "path": "/api/v1/payment-methods",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "paymentMethods",
+            "source_function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:25:19",
+            "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:104:19",
+            "outputs": [
+                {
+                    "id": 1483,
+                    "handler_id": 242,
+                    "type": "http",
+                    "label": "GET /api/v1/payment-methods?user_id={user_id} to payment provider",
+                    "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/service/gateway_service.go:178:26",
+                    "function_name": "GetPaymentMethods",
+                    "description": "When handling a valid GET request, the gateway service forwards the request to the configured payment provider by issuing an HTTP GET to the provider's /api/v1/payment-methods endpoint with the user_id query parameter.",
+                    "created_at": "2026-01-30T09:42:58.843768738Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1485,
+                    "handler_id": 242,
+                    "type": "http",
+                    "label": "POST /api/v1/payment-methods to payment provider (body: CreatePaymentMethodRequest)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/service/gateway_service.go:152:26",
+                    "function_name": "CreatePaymentMethod",
+                    "description": "When handling a valid POST to create a payment method, the gateway service forwards the creation request to the configured payment provider by issuing an HTTP POST to /api/v1/payment-methods with the request body containing the CreatePaymentMethodRequest.",
+                    "created_at": "2026-01-30T09:42:58.847122439Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1484,
+                    "handler_id": 242,
+                    "type": "http_response",
+                    "label": "HTTP 200 OK with JSON list of payment methods",
+                    "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:104:19",
+                    "function_name": "paymentMethods",
+                    "description": "If the provider call for GET succeeds and the response is decoded, the handler returns an HTTP 200 response to the client containing the JSON-encoded list of payment methods.",
+                    "created_at": "2026-01-30T09:42:58.845670936Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1486,
+                    "handler_id": 242,
+                    "type": "http_response",
+                    "label": "HTTP 201 Created with JSON payment method",
+                    "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:104:19",
+                    "function_name": "paymentMethods",
+                    "description": "If the provider POST returns a successful response and its body decodes to a PaymentMethod, the handler returns an HTTP 201 Created response to the client with the JSON-encoded payment method.",
+                    "created_at": "2026-01-30T09:42:58.849033068Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1482,
+                    "handler_id": 242,
+                    "type": "http_response",
+                    "label": "HTTP error response (400 Bad Request) - invalid request body",
+                    "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:104:19",
+                    "function_name": "paymentMethods",
+                    "description": "For POST requests, if the request body cannot be decoded into the expected CreatePaymentMethodRequest structure, the handler returns a bad-request HTTP error response to the client.",
+                    "created_at": "2026-01-30T09:42:58.841665276Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1480,
+                    "handler_id": 242,
+                    "type": "http_response",
+                    "label": "HTTP error response (400 Bad Request) - user_id is required",
+                    "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:104:19",
+                    "function_name": "paymentMethods",
+                    "description": "If the incoming GET request does not include the required \"user_id\" query parameter, the handler returns an HTTP error response to the client indicating a bad request.",
+                    "created_at": "2026-01-30T09:42:58.826521544Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1481,
+                    "handler_id": 242,
+                    "type": "http_response",
+                    "label": "HTTP error response (405 Method Not Allowed)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:104:19",
+                    "function_name": "paymentMethods",
+                    "description": "If the incoming request uses an HTTP method other than GET or POST, the handler returns a method-not-allowed HTTP error response to the client.",
+                    "created_at": "2026-01-30T09:42:58.838352359Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1487,
+                    "handler_id": 242,
+                    "type": "http_response",
+                    "label": "HTTP error response (validation/internal error from gateway service)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:104:19",
+                    "function_name": "paymentMethods",
+                    "description": "If the gateway service returns an error (for example: unsupported provider validation error, provider request failure, or response decode failure), the handler returns an error HTTP response to the client reflecting that failure. (The gateway service may return validation errors immediately without making an external provider call.)",
+                    "created_at": "2026-01-30T09:42:58.850468875Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T09:41:57.980427924Z",
+            "updated_at": null
+        },
+        {
+            "id": 244,
+            "type": "http",
+            "method": "GET",
+            "path": "/api/v1/providers",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "listProviders",
+            "source_function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:25:19",
+            "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:149:19",
+            "outputs": [
+                {
+                    "id": 1464,
+                    "handler_id": 244,
+                    "type": "http_response",
+                    "label": "HTTP 200 JSON response with providers list",
+                    "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:149:19",
+                    "function_name": "listProviders",
+                    "description": "When the request method is GET, the handler returns an HTTP 200 response with a JSON body: {\"providers\": [...]}. The providers slice is obtained from GatewayService.GetSupportedProviders (which returns model.ProviderStripe, model.ProviderBraintree, model.ProviderWorldpay).",
+                    "created_at": "2026-01-30T09:42:35.987657991Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1465,
+                    "handler_id": 244,
+                    "type": "http_response",
+                    "label": "HTTP error response (method not allowed)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:149:19",
+                    "function_name": "listProviders",
+                    "description": "When the request method is not GET, the handler calls response.Error with a methodNotAllowedError, resulting in an HTTP error response indicating the request method is not allowed.",
+                    "created_at": "2026-01-30T09:42:36.001410064Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T09:41:57.984443325Z",
+            "updated_at": null
+        },
+        {
+            "id": 245,
+            "type": "http",
+            "method": "GET",
+            "path": "/api/v1/providers/health",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "providerHealth",
+            "source_function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:25:19",
+            "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:161:19",
+            "outputs": [
+                {
+                    "id": 1461,
+                    "handler_id": 245,
+                    "type": "http",
+                    "label": "HTTP GET /health to each configured provider",
+                    "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/service/gateway_service.go:200:26",
+                    "function_name": "CheckProviderHealth",
+                    "description": "For each provider in s.providerClients the service performs an outbound HTTP GET request to the provider's /health endpoint (client.Get(ctx, \"/health\", nil)). The result is used to determine availability and latency.",
+                    "created_at": "2026-01-30T09:42:25.524162087Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1462,
+                    "handler_id": 245,
+                    "type": "http_response",
+                    "label": "HTTP 200 JSON response with providers health",
+                    "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:161:19",
+                    "function_name": "providerHealth",
+                    "description": "If the incoming request method is GET, the handler returns an HTTP 200 response to the client with a JSON body containing a \"providers\" array (the health results returned by CheckProviderHealth).",
+                    "created_at": "2026-01-30T09:42:25.537981586Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1463,
+                    "handler_id": 245,
+                    "type": "http_response",
+                    "label": "HTTP error response (method not allowed)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:161:19",
+                    "function_name": "providerHealth",
+                    "description": "If the incoming request method is not GET, the handler returns an HTTP error response indicating the method is not allowed (via response.Error with methodNotAllowedError).",
+                    "created_at": "2026-01-30T09:42:25.540211073Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T09:41:57.986220767Z",
+            "updated_at": null
+        },
+        {
+            "id": 243,
+            "type": "http",
+            "method": "POST",
+            "path": "/api/v1/payment-methods",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "paymentMethods",
+            "source_function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:25:19",
+            "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:104:19",
+            "outputs": [
+                {
+                    "id": 1491,
+                    "handler_id": 243,
+                    "type": "http",
+                    "label": "HTTP GET to payment provider: GET /api/v1/payment-methods?user_id={user_id}",
+                    "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/service/gateway_service.go:178:26",
+                    "function_name": "GetPaymentMethods",
+                    "description": "When handling a GET request with a supported provider, the gateway service forwards the request to the configured provider client by issuing an HTTP GET to the provider's /api/v1/payment-methods endpoint with the user_id query parameter.",
+                    "created_at": "2026-01-30T09:42:59.254896279Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1493,
+                    "handler_id": 243,
+                    "type": "http",
+                    "label": "HTTP POST to payment provider: POST /api/v1/payment-methods",
+                    "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/service/gateway_service.go:152:26",
+                    "function_name": "CreatePaymentMethod",
+                    "description": "When handling a POST to create a payment method, the gateway service forwards the request to the configured provider client by issuing an HTTP POST to the provider's /api/v1/payment-methods endpoint with the CreatePaymentMethodRequest as the request body.",
+                    "created_at": "2026-01-30T09:42:59.257203653Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1492,
+                    "handler_id": 243,
+                    "type": "http_response",
+                    "label": "HTTP 200 OK JSON response (payment methods)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:104:19",
+                    "function_name": "paymentMethods",
+                    "description": "If the provider GET request succeeds and the response is decoded, the handler returns an HTTP 200 response containing the list of payment methods (JSON) to the caller.",
+                    "created_at": "2026-01-30T09:42:59.256049915Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1495,
+                    "handler_id": 243,
+                    "type": "http_response",
+                    "label": "HTTP 201 Created JSON response (created payment method)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:104:19",
+                    "function_name": "paymentMethods",
+                    "description": "If the provider POST succeeds and the response is decoded into a PaymentMethod, the handler returns an HTTP 201 Created response containing the created payment method (JSON) to the caller.",
+                    "created_at": "2026-01-30T09:42:59.260126257Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1489,
+                    "handler_id": 243,
+                    "type": "http_response",
+                    "label": "HTTP 400/validation error response (invalid JSON body)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:104:19",
+                    "function_name": "paymentMethods",
+                    "description": "If the POST request body cannot be decoded as JSON into CreatePaymentMethodRequest, the handler returns a client error response (bad request) to the caller.",
+                    "created_at": "2026-01-30T09:42:59.250136083Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1488,
+                    "handler_id": 243,
+                    "type": "http_response",
+                    "label": "HTTP 400/validation error response (missing user_id)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:104:19",
+                    "function_name": "paymentMethods",
+                    "description": "If the query parameter 'user_id' is empty on a GET request, the handler returns a client error response (bad request) to the caller.",
+                    "created_at": "2026-01-30T09:42:59.237370475Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1490,
+                    "handler_id": 243,
+                    "type": "http_response",
+                    "label": "HTTP 405 Method Not Allowed response",
+                    "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:104:19",
+                    "function_name": "paymentMethods",
+                    "description": "If the incoming HTTP method is not GET or POST, the handler returns a method-not-allowed response to the caller.",
+                    "created_at": "2026-01-30T09:42:59.25320488Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1494,
+                    "handler_id": 243,
+                    "type": "http_response",
+                    "label": "HTTP error response when provider returns non-success",
+                    "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:104:19",
+                    "function_name": "paymentMethods",
+                    "description": "If the provider POST to create a payment method returns a non-success HTTP response (detected via resp.IsSuccess()), the gateway service returns an error which the handler turns into an HTTP error response to the caller.",
+                    "created_at": "2026-01-30T09:42:59.258427404Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T09:41:57.982535504Z",
+            "updated_at": null
+        },
+        {
+            "id": 240,
+            "type": "http",
+            "method": "POST",
+            "path": "/api/v1/payments/charge",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "charge",
+            "source_function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:25:19",
+            "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:47:19",
+            "outputs": [
+                {
+                    "id": 1477,
+                    "handler_id": 240,
+                    "type": "event",
+                    "label": "Publish payment failed event to Kafka (kafka.TopicPaymentFailed, kafka.EventPaymentFailed)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/service/gateway_service.go:229:26",
+                    "function_name": "publishPaymentEvent",
+                    "description": "If the provider response indicates the payment failed (after a successful provider response decode), the service publishes a payment-failed event (with transaction_id, user_id, subscription_id, amount, currency, provider, status, error_message, timestamp) to the failure topic using the producer's PublishWithKey.",
+                    "created_at": "2026-01-30T09:42:52.801289996Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1476,
+                    "handler_id": 240,
+                    "type": "event",
+                    "label": "Publish payment succeeded event to Kafka (kafka.TopicPaymentSucceeded, kafka.EventPaymentSucceeded)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/service/gateway_service.go:229:26",
+                    "function_name": "publishPaymentEvent",
+                    "description": "If the provider response indicates the payment succeeded, the service publishes a payment-succeeded event (with transaction_id, user_id, subscription_id, amount, currency, provider, status, error_message, timestamp) to the success topic using the producer's PublishWithKey.",
+                    "created_at": "2026-01-30T09:42:52.799604305Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1475,
+                    "handler_id": 240,
+                    "type": "http",
+                    "label": "HTTP POST to payment provider: POST /api/v1/charge",
+                    "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/service/gateway_service.go:50:26",
+                    "function_name": "Charge",
+                    "description": "The gateway service forwards the charge request to the configured payment provider by issuing an HTTP POST to the provider endpoint /api/v1/charge (provider chosen by req.Provider).",
+                    "created_at": "2026-01-30T09:42:52.797767512Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1479,
+                    "handler_id": 240,
+                    "type": "http_response",
+                    "label": "HTTP 200 OK response with ChargeResponse JSON",
+                    "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:47:19",
+                    "function_name": "charge",
+                    "description": "If GatewayService.Charge returns a ChargeResponse without error (this includes both successful charges and handled failure responses like 'payment provider unavailable' or 'invalid provider response'), the handler returns an HTTP 200 response with the ChargeResponse JSON body to the client using response.OK.",
+                    "created_at": "2026-01-30T09:42:52.804452028Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1474,
+                    "handler_id": 240,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request response (invalid JSON body)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:47:19",
+                    "function_name": "charge",
+                    "description": "If the request body cannot be decoded as JSON into the charge request model, the handler returns an HTTP bad request error response to the client.",
+                    "created_at": "2026-01-30T09:42:52.794132217Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1473,
+                    "handler_id": 240,
+                    "type": "http_response",
+                    "label": "HTTP 405 Method Not Allowed response",
+                    "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:47:19",
+                    "function_name": "charge",
+                    "description": "If the incoming request method is not POST, the handler returns an HTTP error response indicating method not allowed to the client.",
+                    "created_at": "2026-01-30T09:42:52.785205509Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1478,
+                    "handler_id": 240,
+                    "type": "http_response",
+                    "label": "HTTP error response returned to client (validation or other error from GatewayService.Charge)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:47:19",
+                    "function_name": "charge",
+                    "description": "If GatewayService.Charge returns an error (for example: unsupported payment provider or invalid amount), the handler returns an HTTP error response to the client using response.Error.",
+                    "created_at": "2026-01-30T09:42:52.802789675Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T09:41:57.9757475Z",
+            "updated_at": null
+        },
+        {
+            "id": 241,
+            "type": "http",
+            "method": "POST",
+            "path": "/api/v1/payments/refund",
+            "source_function_name": "RegisterRoutes",
+            "function_name": "refund",
+            "source_function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:25:19",
+            "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:78:19",
+            "outputs": [
+                {
+                    "id": 1472,
+                    "handler_id": 241,
+                    "type": "event",
+                    "label": "Publish refund event to Kafka (TopicPaymentRefunded)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/service/gateway_service.go:256:26",
+                    "function_name": "publishRefundEvent",
+                    "description": "If the provider indicates the refund succeeded (refundResp.Success == true), the gateway service publishes a refund event via the configured producer using PublishWithKey with topic kafka.TopicPaymentRefunded, the RefundID as the key, and the refund payload (refund_id, transaction_id, amount, provider, reason, status, timestamp).",
+                    "created_at": "2026-01-30T09:42:47.671485233Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1470,
+                    "handler_id": 241,
+                    "type": "http",
+                    "label": "POST /api/v1/refund to payment provider",
+                    "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/service/gateway_service.go:107:26",
+                    "function_name": "Refund",
+                    "description": "The gateway service forwards the refund request to the configured payment provider by issuing an HTTP POST to the provider path /api/v1/refund using the provider client.",
+                    "created_at": "2026-01-30T09:42:47.6689497Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1471,
+                    "handler_id": 241,
+                    "type": "http_response",
+                    "label": "HTTP 200 JSON response with RefundResponse",
+                    "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:78:19",
+                    "function_name": "refund",
+                    "description": "After processing, the handler returns an HTTP 200 response to the caller with the RefundResponse payload produced by the gateway service (this covers successful provider responses as well as the service-created failure responses when the provider call or response decoding fails).",
+                    "created_at": "2026-01-30T09:42:47.670268023Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1467,
+                    "handler_id": 241,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request (invalid request body)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:78:19",
+                    "function_name": "refund",
+                    "description": "If the request body cannot be decoded as a RefundRequest JSON, the handler returns a 400 bad request error response to the client.",
+                    "created_at": "2026-01-30T09:42:47.662239574Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1468,
+                    "handler_id": 241,
+                    "type": "http_response",
+                    "label": "HTTP 400 Bad Request (provider is required)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:78:19",
+                    "function_name": "refund",
+                    "description": "If the decoded RefundRequest is missing the Provider field, the handler returns a 400 bad request error response to the client.",
+                    "created_at": "2026-01-30T09:42:47.666504475Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1466,
+                    "handler_id": 241,
+                    "type": "http_response",
+                    "label": "HTTP 405 Method Not Allowed response",
+                    "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:78:19",
+                    "function_name": "refund",
+                    "description": "If the incoming request method is not POST, the handler returns a method-not-allowed error response to the client.",
+                    "created_at": "2026-01-30T09:42:47.648237738Z",
+                    "updated_at": null
+                },
+                {
+                    "id": 1469,
+                    "handler_id": 241,
+                    "type": "http_response",
+                    "label": "HTTP error response (unsupported payment provider validation error)",
+                    "function_id": "/home/evan/Code/rinder/services/payment-gateway/internal/handler/handler.go:78:19",
+                    "function_name": "refund",
+                    "description": "If the gateway service determines the requested payment provider is unsupported, it returns a validation error which the handler writes back to the client as an error HTTP response.",
+                    "created_at": "2026-01-30T09:42:47.667679797Z",
+                    "updated_at": null
+                }
+            ],
+            "created_at": "2026-01-30T09:41:57.978396785Z",
+            "updated_at": null
+        }
+    ]
+}
