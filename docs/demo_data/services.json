@@ -2,7 +2,7 @@
     {
         "id": 9,
         "name": "service-gateway",
-        "git_repo_url": "/home/evan/Code/rinder/services/gateway",
+        "git_repo_url": "https://github.com/evanrolfe/rinder",
         "entrypoint_path": "cmd/main.go",
         "entrypoint_function": "main",
         "git_org_url": "github.com/rinder",
@@ -15,7 +15,7 @@
     {
         "id": 10,
         "name": "service-analytics",
-        "git_repo_url": "/home/evan/Code/rinder/services/analytics",
+        "git_repo_url": "https://github.com/evanrolfe/rinder",
         "entrypoint_path": "cmd/main.go",
         "entrypoint_function": "main",
         "git_org_url": "github.com/rinder",
@@ -28,7 +28,7 @@
     {
         "id": 11,
         "name": "service-matching",
-        "git_repo_url": "/home/evan/Code/rinder/services/matching",
+        "git_repo_url": "https://github.com/evanrolfe/rinder",
         "entrypoint_path": "cmd/main.go",
         "entrypoint_function": "main",
         "git_org_url": "github.com/rinder",
@@ -41,7 +41,7 @@
     {
         "id": 12,
         "name": "service-media",
-        "git_repo_url": "/home/evan/Code/rinder/services/media",
+        "git_repo_url": "https://github.com/evanrolfe/rinder",
         "entrypoint_path": "cmd/main.go",
         "entrypoint_function": "main",
         "git_org_url": "github.com/rinder",
@@ -54,7 +54,7 @@
     {
         "id": 13,
         "name": "service-notification",
-        "git_repo_url": "/home/evan/Code/rinder/services/notification",
+        "git_repo_url": "https://github.com/evanrolfe/rinder",
         "entrypoint_path": "cmd/main.go",
         "entrypoint_function": "main",
         "git_org_url": "github.com/rinder",
@@ -67,7 +67,7 @@
     {
         "id": 14,
         "name": "service-profile",
-        "git_repo_url": "/home/evan/Code/rinder/services/profile",
+        "git_repo_url": "https://github.com/evanrolfe/rinder",
         "entrypoint_path": "cmd/main.go",
         "entrypoint_function": "main",
         "git_org_url": "github.com/rinder",
@@ -80,7 +80,7 @@
     {
         "id": 15,
         "name": "service-user",
-        "git_repo_url": "/home/evan/Code/rinder/services/user",
+        "git_repo_url": "https://github.com/evanrolfe/rinder",
         "entrypoint_path": "cmd/main.go",
         "entrypoint_function": "main",
         "git_org_url": "github.com/rinder",
@@ -93,7 +93,7 @@
     {
         "id": 17,
         "name": "service-subscription",
-        "git_repo_url": "/home/evan/Code/rinder/services/subscription",
+        "git_repo_url": "https://github.com/evanrolfe/rinder",
         "entrypoint_path": "cmd/main.go",
         "entrypoint_function": "main",
         "git_org_url": "github.com/rinder",
@@ -106,7 +106,7 @@
     {
         "id": 18,
         "name": "service-payment-gateway",
-        "git_repo_url": "/home/evan/Code/rinder/services/payment-gateway",
+        "git_repo_url": "https://github.com/evanrolfe/rinder",
         "entrypoint_path": "cmd/main.go",
         "entrypoint_function": "main",
         "git_org_url": "github.com/rinder",
@@ -119,7 +119,7 @@
     {
         "id": 19,
         "name": "service-payment-braintree",
-        "git_repo_url": "/home/evan/Code/rinder/services/payment-braintree",
+        "git_repo_url": "https://github.com/evanrolfe/rinder",
         "entrypoint_path": "cmd/main.go",
         "entrypoint_function": "main",
         "git_org_url": "github.com/rinder",
@@ -132,7 +132,7 @@
     {
         "id": 20,
         "name": "service-payment-stripe",
-        "git_repo_url": "/home/evan/Code/rinder/services/payment-stripe",
+        "git_repo_url": "https://github.com/evanrolfe/rinder",
         "entrypoint_path": "cmd/main.go",
         "entrypoint_function": "main",
         "git_org_url": "github.com/rinder",
@@ -145,7 +145,7 @@
     {
         "id": 21,
         "name": "service-payment-worldpay",
-        "git_repo_url": "/home/evan/Code/rinder/services/payment-worldpay",
+        "git_repo_url": "https://github.com/evanrolfe/rinder",
         "entrypoint_path": "cmd/main.go",
         "entrypoint_function": "main",
         "git_org_url": "github.com/rinder",

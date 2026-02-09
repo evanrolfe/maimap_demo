@@ -1,7 +1,7 @@
 {
     "id": 9,
     "name": "service-gateway",
-    "git_repo_url": "/home/evan/Code/rinder/services/gateway",
+    "git_repo_url": "https://github.com/evanrolfe/rinder",
     "entrypoint_path": "cmd/main.go",
     "entrypoint_function": "main",
     "git_org_url": "github.com/rinder",
