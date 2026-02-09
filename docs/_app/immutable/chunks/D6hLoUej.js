@@ -1,0 +1,1 @@
+import{e as r}from"./Bq6M2nPi.js";function n(e){return e.includes("failed")?"preset-filled-error-500":e.includes("completed")?"preset-filled-success-500":e.includes("in_progress")||e.includes("created")?"preset-filled-warning-500":"variant-filled-surface"}async function t(e){if(!e)throw new Error("Service ID is required");return await r(e)}export{t as f,n as g};
